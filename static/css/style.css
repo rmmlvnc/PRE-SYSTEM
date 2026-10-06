@@ -1,0 +1,362 @@
+/* ================================
+   DENGUEWATCH LOGIN PAGE
+================================ */
+
+.login-page {
+    min-height: 100vh;
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f4f7f9;
+}
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+}
+
+
+/* ================================
+   LEFT SIDE
+================================ */
+
+.login-info {
+    width: 55%;
+    padding: 70px 8%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #0f766e;
+    color: white;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 50px;
+}
+
+.brand i {
+    font-size: 38px;
+}
+
+.login-info h1 {
+    font-size: 45px;
+    line-height: 1.15;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+.login-info h1 span {
+    display: block;
+}
+
+.login-info > p {
+    max-width: 600px;
+    font-size: 17px;
+    line-height: 1.7;
+    opacity: 0.92;
+    margin-bottom: 40px;
+}
+
+
+/* ================================
+   FEATURES
+================================ */
+
+.system-features {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.feature > i {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 22px;
+}
+
+.feature strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 3px;
+}
+
+.feature small {
+    opacity: 0.8;
+}
+
+
+/* ================================
+   LOGIN CARD
+================================ */
+
+.login-card {
+    width: 45%;
+    max-width: 600px;
+    margin: auto;
+    padding: 50px;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-icon {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e6f4f1;
+    color: #0f766e;
+    border-radius: 50%;
+    font-size: 28px;
+}
+
+.login-header h2 {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1f2937;
+}
+
+.login-header p {
+    color: #6b7280;
+}
+
+
+/* ================================
+   FORM
+================================ */
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper > i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    z-index: 2;
+}
+
+.input-wrapper .form-control {
+    height: 50px;
+    padding-left: 45px;
+    padding-right: 45px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+.input-wrapper .form-control:focus {
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+
+/* Password Button */
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 18px;
+}
+
+
+/* ================================
+   LOGIN OPTIONS
+================================ */
+
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 18px 0 25px;
+    font-size: 14px;
+}
+
+.forgot-password {
+    color: #0f766e;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+
+/* ================================
+   LOGIN BUTTON
+================================ */
+
+.btn-login {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 8px;
+    background: #0f766e;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-login:hover {
+    background: #115e59;
+}
+
+.btn-login i {
+    margin-right: 8px;
+}
+
+
+/* ================================
+   DIVIDER
+================================ */
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 30px 0 20px;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+}
+
+
+/* ================================
+   USER TYPES
+================================ */
+
+.user-types {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.user-types span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-types i {
+    color: #0f766e;
+}
+
+
+/* ================================
+   FOOTER
+================================ */
+
+.login-footer {
+    text-align: center;
+    margin-top: 35px;
+}
+
+.login-footer p {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.login-footer a {
+    color: #0f766e;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-footer small {
+    color: #9ca3af;
+}
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 900px) {
+
+    .login-container {
+        display: block;
+    }
+
+    .login-info {
+        width: 100%;
+        padding: 45px 30px;
+    }
+
+    .login-info h1 {
+        font-size: 34px;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: none;
+        padding: 45px 30px;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .login-info {
+        padding: 35px 20px;
+    }
+
+    .login-card {
+        padding: 35px 20px;
+    }
+
+    .login-info h1 {
+        font-size: 29px;
+    }
+
+    .login-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+}
+

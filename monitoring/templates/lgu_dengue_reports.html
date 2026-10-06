@@ -1,0 +1,448 @@
+{% load static %} <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DengueWatch | Dengue Reports</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7f9;
+        color: #1f2937;
+      }
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 260px;
+        background: #0f766e;
+        color: #fff;
+        padding: 25px 18px;
+        z-index: 10;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 12px 25px;
+        border-bottom: 1px solid #ffffff40;
+      }
+      .brand i {
+        font-size: 30px;
+      }
+      .brand strong {
+        display: block;
+        font-size: 20px;
+      }
+      .brand small {
+        font-size: 10px;
+        opacity: 0.75;
+      }
+      .nav-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.65;
+        margin: 22px 12px 8px;
+      }
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #fff;
+        text-decoration: none;
+        padding: 11px 12px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+      .sidebar a:hover,
+      .sidebar a.active {
+        background: #ffffff2f;
+      }
+      .sidebar a i {
+        width: 18px;
+        text-align: center;
+      }
+      .main {
+        margin-left: 260px;
+        min-height: 100vh;
+      }
+      .topbar {
+        height: 75px;
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .topbar h5 {
+        margin: 0;
+        font-weight: 700;
+      }
+      .muted,
+      .topbar small {
+        color: #6b7280;
+      }
+      .role {
+        background: #e6f4f1;
+        color: #0f766e;
+        border-radius: 18px;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      .content {
+        padding: 30px 34px;
+      }
+      .heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .heading h2 {
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0 0 5px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      .stat,
+      .panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        box-shadow: 0 2px 8px #0f172a0a;
+      }
+      .stat {
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #e6f4f1;
+        color: #0f766e;
+        display: grid;
+        place-items: center;
+      }
+      .stat h3 {
+        font-size: 23px;
+        margin: 0;
+      }
+      .stat p {
+        font-size: 11px;
+        color: #6b7280;
+        margin: 2px 0 0;
+      }
+      .toolbar {
+        padding: 16px 18px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .filters {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1.3fr auto auto auto;
+        gap: 9px;
+      }
+      .filters input,
+      .filters select,
+      .btnx {
+        height: 39px;
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+        padding: 0 11px;
+        background: #fff;
+        font-size: 12px;
+      }
+      .btnx {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #374151;
+      }
+      .btn-primaryx {
+        background: #0f766e;
+        color: #fff;
+        border-color: #0f766e;
+      }
+      .table-responsive {
+        max-height: 610px;
+      }
+      table {
+        margin: 0 !important;
+      }
+      thead th {
+        position: sticky;
+        top: 0;
+        background: #f8fafc !important;
+        color: #4b5563 !important;
+        font-size: 10px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      tbody td {
+        font-size: 12px;
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+      .pager {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        font-size: 12px;
+      }
+      .pager a {
+        color: #0f766e;
+        text-decoration: none;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 6px 10px;
+        margin-left: 5px;
+      }
+      .notice {
+        padding: 13px 15px;
+        background: #e6f4f1;
+        border-left: 4px solid #0f766e;
+        border-radius: 8px;
+        font-size: 12px;
+        margin-bottom: 18px;
+      }
+      @media (max-width: 1050px) {
+        .filters {
+          grid-template-columns: 1fr 1fr 1fr;
+        }
+        .stats {
+          grid-template-columns: 1fr 1fr 1fr;
+        }
+      }
+      @media (max-width: 760px) {
+        .sidebar {
+          position: relative;
+          width: 100%;
+          height: auto;
+        }
+        .sidebar nav {
+          display: flex;
+          overflow: auto;
+        }
+        .nav-title {
+          display: none;
+        }
+        .sidebar a {
+          white-space: nowrap;
+        }
+        .main {
+          margin-left: 0;
+        }
+        .content {
+          padding: 20px 12px;
+        }
+        .topbar {
+          padding: 0 15px;
+        }
+        .stats,
+        .filters {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media print {
+        .sidebar,
+        .topbar,
+        .heading .actions,
+        .toolbar,
+        .pager {
+          display: none;
+        }
+        .main {
+          margin: 0;
+        }
+        .content {
+          padding: 0;
+        }
+        .table-responsive {
+          max-height: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'includes/role_sidebar.html' %}
+    <div class="main">
+      <header class="topbar">
+        <div>
+          <h5>Dengue Reports</h5>
+          <small>DengueWatch City-wide Monitoring</small>
+        </div>
+        <span class="role">Local Government Unit (LGU)</span>
+      </header>
+      <main class="content">
+        <section class="heading">
+          <div>
+            <h2>City-wide Dengue Reports</h2>
+            <p class="muted mb-0">
+              Read-only patient-level surveillance records from the integrated
+              source datasets.
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btnx" onclick="window.print()">
+              <i class="fa-solid fa-print me-2"></i>Print
+            </button>
+          </div>
+        </section>
+        <div class="notice">
+          <i class="fa-solid fa-circle-info me-2"></i>LGU access is for planning
+          and monitoring. Patient names and direct identifiers are not
+          displayed.
+        </div>
+        <section class="stats">
+          <article class="stat">
+            <div class="icon"><i class="fa-solid fa-database"></i></div>
+            <div>
+              <h3>{{ total_records }}</h3>
+              <p>ALL SOURCE RECORDS</p>
+            </div>
+          </article>
+          <article class="stat">
+            <div class="icon"><i class="fa-solid fa-filter"></i></div>
+            <div>
+              <h3>{{ filtered_count }}</h3>
+              <p>MATCHING RECORDS</p>
+            </div>
+          </article>
+          <article class="stat">
+            <div class="icon"><i class="fa-solid fa-map-location-dot"></i></div>
+            <div>
+              <h3>{{ barangay_count }}</h3>
+              <p>BARANGAYS IN RESULTS</p>
+            </div>
+          </article>
+        </section>
+        <section class="panel">
+          <div class="toolbar">
+            <form class="filters" method="get">
+              <input
+                name="search"
+                value="{{ search }}"
+                placeholder="Search barangay, purok, date…"
+              /><select name="year">
+                <option value="all">All Years</option>
+                {% for year in years %}
+                <option
+                  value="{{ year }}"
+                  {%
+                  if
+                  selected_year=""
+                  ="year"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  {{ year }}
+                </option>
+                {% endfor %}</select
+              ><select name="barangay">
+                <option value="all">All Barangays</option>
+                {% for barangay in barangays %}
+                <option
+                  value="{{ barangay }}"
+                  {%
+                  if
+                  selected_barangay=""
+                  ="barangay"
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  {{ barangay }}
+                </option>
+                {% endfor %}</select
+              ><button class="btnx btn-primaryx" type="submit">
+                <i class="fa-solid fa-magnifying-glass me-2"></i>Filter</button
+              ><a class="btnx" href="{% url 'lgu_dengue_reports' %}">Reset</a
+              ><button class="btnx" type="submit" name="export" value="csv">
+                <i class="fa-solid fa-download me-2"></i>CSV
+              </button>
+            </form>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Record ID</th>
+                  <th>Year</th>
+                  <th>Date Reported</th>
+                  <th>Barangay</th>
+                  <th>Purok / Street</th>
+                  <th>Sex</th>
+                  <th>Age</th>
+                  <th>Blood Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for case in page_obj %}
+                <tr>
+                  <td>DW-{{ case.id|stringformat:"05d" }}</td>
+                  <td>{{ case.year|default:"—" }}</td>
+                  <td>{{ case.date_reported|default:"—" }}</td>
+                  <td>
+                    <strong>{{ case.barangay|default:"Not specified" }}</strong>
+                  </td>
+                  <td>{{ case.purok|default:"Not specified" }}</td>
+                  <td>{{ case.sex|default:"—" }}</td>
+                  <td>{{ case.age|default:"—" }}</td>
+                  <td>{{ case.blood_type|default:"N/A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="8" class="text-center py-5 muted">
+                    No dengue records match the selected filters.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <span
+              >Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+              · {{ filtered_count }} result{{ filtered_count|pluralize }}</span
+            >
+            <div>
+              {% if page_obj.has_previous %}<a
+                href="?search={{ search|urlencode }}&year={{ selected_year|urlencode }}&barangay={{ selected_barangay|urlencode }}&page={{ page_obj.previous_page_number }}"
+                >Previous</a
+              >{% endif %}{% if page_obj.has_next %}<a
+                href="?search={{ search|urlencode }}&year={{ selected_year|urlencode }}&barangay={{ selected_barangay|urlencode }}&page={{ page_obj.next_page_number }}"
+                >Next</a
+              >{% endif %}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

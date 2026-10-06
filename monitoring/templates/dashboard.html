@@ -1,0 +1,1270 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DengueWatch | Dashboard</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <!-- DengueWatch CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        /* ================================
+           DENGUEWATCH DASHBOARD
+        ================================= */
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7f9;
+            color: #1f2937;
+        }
+
+        .dashboard-wrapper {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ================================
+           SIDEBAR
+        ================================= */
+
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: #0f766e;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            padding: 25px 18px;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 25px;
+        }
+
+        .sidebar-brand i {
+            font-size: 30px;
+        }
+
+        .sidebar-brand h4 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .sidebar-brand small {
+            display: block;
+            opacity: 0.75;
+            font-size: 11px;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.65;
+            padding: 0 12px;
+            margin: 20px 0 8px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .sidebar a.active {
+            background: rgba(255,255,255,0.18);
+        }
+
+        .sidebar a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-link {
+            margin-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 20px !important;
+        }
+
+        /* ================================
+           MAIN CONTENT
+        ================================= */
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            min-height: 100vh;
+        }
+
+        /* ================================
+           TOPBAR
+        ================================= */
+
+        .topbar {
+            background: white;
+            height: 75px;
+            padding: 0 35px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .topbar h5 {
+            margin: 0;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .topbar small {
+            color: #6b7280;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #e6f4f1;
+            color: #0f766e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .role-badge {
+            background: #e6f4f1;
+            color: #0f766e;
+            padding: 4px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* ================================
+           CONTENT
+        ================================= */
+
+        .content {
+            padding: 35px;
+        }
+
+        .welcome-section {
+            margin-bottom: 30px;
+        }
+
+        .welcome-section h2 {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .welcome-section p {
+            color: #6b7280;
+            margin: 0;
+        }
+
+        /* ================================
+           STAT CARDS
+        ================================= */
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 22px;
+            height: 100%;
+            transition: 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: #e6f4f1;
+            color: #0f766e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stat-card p {
+            color: #6b7280;
+            margin: 4px 0 0;
+            font-size: 13px;
+        }
+
+        /* ================================
+           SECTION CARD
+        ================================= */
+
+        .section-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .section-header h5 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .section-header p {
+            margin: 3px 0 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        /* ================================
+           QUICK ACTIONS
+        ================================= */
+
+        .action-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 18px;
+            height: 100%;
+            text-decoration: none;
+            color: #1f2937;
+            display: block;
+            transition: 0.2s;
+        }
+
+        .action-card:hover {
+            border-color: #0f766e;
+            color: #0f766e;
+            transform: translateY(-2px);
+        }
+
+        .action-card i {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #0f766e;
+        }
+
+        .action-card strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .action-card small {
+            color: #6b7280;
+        }
+
+        /* ================================
+           NOTICE
+        ================================= */
+
+        .notice {
+            background: #e6f4f1;
+            border-left: 4px solid #0f766e;
+            padding: 15px 18px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .notice strong {
+            color: #0f766e;
+        }
+
+        .notice p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        /* ================================
+           RESPONSIVE
+        ================================= */
+
+        @media (max-width: 900px) {
+
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                margin-left: 220px;
+                width: calc(100% - 220px);
+            }
+
+            .content {
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .dashboard-wrapper {
+                display: block;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="dashboard-wrapper">
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    {% include 'includes/role_sidebar.html' %}
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div>
+
+                <h5>DengueWatch Dashboard</h5>
+
+                <small>
+                    AI-Assisted Dengue Surveillance and Hotspot Analytics
+                </small>
+
+            </div>
+
+
+            <div class="user-info">
+
+                <div class="text-end">
+
+                    <strong>
+                        {{ current_user_name }}
+                    </strong>
+
+                    <br>
+
+                    <span class="role-badge">
+
+                        {% if user.role == "CHO" %}
+                            City Health Office (CHO)
+
+                        {% elif user.role == "CHW" %}
+                            City Health Worker (CHW)
+
+                        {% elif user.role == "BHW" %}
+                            Barangay Health Worker (BHW)
+
+                        {% elif user.role == "LGU" %}
+                            Local Government Unit (LGU)
+
+                        {% else %}
+                            Authorized Personnel
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+                <div class="user-icon">
+
+                    <i class="fa-solid fa-user"></i>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             PAGE CONTENT
+        ================================================== -->
+
+        <div class="content">
+
+
+            <!-- WELCOME -->
+
+            <div class="welcome-section">
+
+                <h2>
+                    Welcome, {{ user.username }}!
+                </h2>
+
+                <p>
+
+                    {% if user.role == "CHO" %}
+
+                        You have full access to DengueWatch monitoring
+                        and administrative functions.
+
+                    {% elif user.role == "CHW" %}
+
+                        Monitor dengue cases and hotspot information
+                        within your assigned areas.
+
+                    {% elif user.role == "BHW" %}
+
+                        Submit and monitor dengue cases in your
+                        assigned barangay or purok.
+
+                    {% elif user.role == "LGU" %}
+
+                        View city-wide dengue monitoring information
+                        and analytics for decision-making.
+
+                    {% else %}
+
+                        Welcome to the DengueWatch system.
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+
+            <!-- NOTICE -->
+
+            <div class="notice">
+
+                <strong>
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Authorized Personnel Portal
+                </strong>
+
+                <p>
+                    This website is intended for authorized DengueWatch
+                    personnel only. Residents access DengueWatch through
+                    the mobile application.
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 CHO DASHBOARD
+            ================================================== -->
+
+            {% if user.role == "CHO" %}
+
+                <div class="row g-4">
+
+                    <div class="col-md-3">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-file-medical"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Total Dengue Cases</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Hotspot Areas</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-user-clock"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Pending Requests</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+
+                            <h3>0%</h3>
+
+                            <p>Current Risk Level</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-card">
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h5>
+                                CHO Quick Actions
+                            </h5>
+
+                            <p>
+                                Manage and monitor the DengueWatch system.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'cases' %}" class="action-card">
+
+                                <i class="fa-solid fa-file-medical"></i>
+
+                                <strong>
+                                    Manage Dengue Cases
+                                </strong>
+
+                                <small>
+                                    Review and validate submitted dengue cases.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'predictions' %}" class="action-card">
+
+                                <i class="fa-solid fa-chart-line"></i>
+
+                                <strong>
+                                    View AI Predictions
+                                </strong>
+
+                                <small>
+                                    Analyze predicted dengue hotspot risks.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'hotspot_map' %}" class="action-card">
+
+                                <i class="fa-solid fa-map-location-dot"></i>
+
+                                <strong>
+                                    Hotspot Map
+                                </strong>
+
+                                <small>
+                                    Monitor dengue risk areas across the city.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'reports' %}" class="action-card">
+
+                                <i class="fa-solid fa-chart-pie"></i>
+
+                                <strong>
+                                    Reports & Analytics
+                                </strong>
+
+                                <small>
+                                    Generate reports for decision-making.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'user_management' %}" class="action-card">
+
+                                <i class="fa-solid fa-users-gear"></i>
+
+                                <strong>
+                                    User Management
+                                </strong>
+
+                                <small>
+                                    Manage authorized DengueWatch personnel.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="#" class="action-card">
+
+                                <i class="fa-solid fa-user-check"></i>
+
+                                <strong>
+                                    Personnel Requests
+                                </strong>
+
+                                <small>
+                                    Review requests from new personnel.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            <!-- =================================================
+                 CHW DASHBOARD
+            ================================================== -->
+
+            {% elif user.role == "CHW" %}
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-file-medical"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Submitted Cases</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Hotspot Areas</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Assigned Areas</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-card">
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h5>
+                                CHW Quick Actions
+                            </h5>
+
+                            <p>
+                                Monitor and submit dengue information.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'cases' %}" class="action-card">
+
+                                <i class="fa-solid fa-file-medical"></i>
+
+                                <strong>
+                                    Dengue Cases
+                                </strong>
+
+                                <small>
+                                    Submit and monitor dengue case records.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'hotspot_map' %}" class="action-card">
+
+                                <i class="fa-solid fa-map-location-dot"></i>
+
+                                <strong>
+                                    Hotspot Map
+                                </strong>
+
+                                <small>
+                                    View dengue risk levels and hotspot areas.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'predictions' %}" class="action-card">
+
+                                <i class="fa-solid fa-chart-line"></i>
+
+                                <strong>
+                                    AI Predictions
+                                </strong>
+
+                                <small>
+                                    View AI-assisted hotspot predictions.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'reports' %}" class="action-card">
+
+                                <i class="fa-solid fa-chart-pie"></i>
+
+                                <strong>
+                                    Reports
+                                </strong>
+
+                                <small>
+                                    View relevant dengue reports.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            <!-- =================================================
+                 BHW DASHBOARD
+            ================================================== -->
+
+            {% elif user.role == "BHW" %}
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-file-medical"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Reported Cases</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Assigned Puroks</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Hotspot Areas</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-card">
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h5>
+                                BHW Quick Actions
+                            </h5>
+
+                            <p>
+                                Manage dengue information within your assigned area.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'cases' %}" class="action-card">
+
+                                <i class="fa-solid fa-file-medical"></i>
+
+                                <strong>
+                                    Submit Dengue Case
+                                </strong>
+
+                                <small>
+                                    Submit a new dengue case report.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'hotspot_map' %}" class="action-card">
+
+                                <i class="fa-solid fa-map-location-dot"></i>
+
+                                <strong>
+                                    Hotspot Information
+                                </strong>
+
+                                <small>
+                                    View hotspot information for your area.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="#" class="action-card">
+
+                                <i class="fa-solid fa-location-dot"></i>
+
+                                <strong>
+                                    My Assigned Area
+                                </strong>
+
+                                <small>
+                                    View your assigned barangay and purok.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            <!-- =================================================
+                 LGU DASHBOARD
+            ================================================== -->
+
+            {% elif user.role == "LGU" %}
+
+                <div class="row g-4">
+
+                    <div class="col-md-3">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-file-medical"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>City-wide Cases</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Hotspot Areas</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Risk Areas</p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <div class="stat-card">
+
+                            <div class="stat-icon">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+
+                            <h3>0</h3>
+
+                            <p>Reports</p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="section-card">
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h5>
+                                LGU Quick Actions
+                            </h5>
+
+                            <p>
+                                View city-wide dengue information and analytics.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'hotspot_map' %}" class="action-card">
+
+                                <i class="fa-solid fa-map-location-dot"></i>
+
+                                <strong>
+                                    Hotspot Map
+                                </strong>
+
+                                <small>
+                                    View dengue hotspots across the city.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'predictions' %}" class="action-card">
+
+                                <i class="fa-solid fa-chart-line"></i>
+
+                                <strong>
+                                    Risk Levels
+                                </strong>
+
+                                <small>
+                                    View AI-assisted dengue risk predictions.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="{% url 'reports' %}" class="action-card">
+
+                                <i class="fa-solid fa-chart-pie"></i>
+
+                                <strong>
+                                    Reports & Analytics
+                                </strong>
+
+                                <small>
+                                    Review reports for decision-making.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <a href="#" class="action-card">
+
+                                <i class="fa-solid fa-city"></i>
+
+                                <strong>
+                                    City-wide Monitoring
+                                </strong>
+
+                                <small>
+                                    View dengue information across the city.
+                                </small>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            {% else %}
+
+                <!-- =================================================
+                     UNKNOWN ROLE
+                ================================================== -->
+
+                <div class="section-card text-center">
+
+                    <i
+                        class="fa-solid fa-triangle-exclamation"
+                        style="font-size: 40px; color: #0f766e;"
+                    ></i>
+
+                    <h4 class="mt-3">
+                        Account Role Not Assigned
+                    </h4>
+
+                    <p class="text-muted">
+                        Your account does not currently have an assigned
+                        DengueWatch role. Please contact the City Health Office.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- Bootstrap JS -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

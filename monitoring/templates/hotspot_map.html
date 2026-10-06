@@ -1,0 +1,3231 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>DengueWatch | Hotspot Map</title>
+
+
+    <!-- Bootstrap -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Font Awesome -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    <!-- Leaflet -->
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            font-family:
+                "Segoe UI",
+                Arial,
+                sans-serif;
+
+            background: #f4f7f9;
+
+            color: #1f2937;
+        }
+
+
+        /* =========================================
+           SIDEBAR
+        ========================================= */
+
+        .sidebar {
+
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            width: 200px;
+
+            height: 100vh;
+
+            background: #0f766e;
+
+            color: white;
+
+            padding: 28px 14px;
+
+            z-index: 1000;
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding:
+                0
+                10px
+                25px;
+
+            border-bottom:
+                1px solid
+                rgba(255,255,255,0.25);
+        }
+
+
+        .brand i {
+
+            font-size: 25px;
+        }
+
+
+        .brand-text strong {
+
+            display: block;
+
+            font-size: 20px;
+        }
+
+
+        .brand-text small {
+
+            font-size: 9px;
+
+            opacity: 0.8;
+        }
+
+
+        .menu-title {
+
+            margin:
+                25px
+                10px
+                10px;
+
+            font-size: 9px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            opacity: 0.7;
+        }
+
+
+        .sidebar a {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            padding:
+                11px
+                10px;
+
+            margin-bottom: 4px;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 7px;
+
+            font-size: 13px;
+        }
+
+
+        .sidebar a:hover,
+        .sidebar a.active {
+
+            background:
+                rgba(255,255,255,0.18);
+        }
+
+
+        .sidebar a i {
+
+            width: 18px;
+
+            text-align: center;
+        }
+
+
+        .logout {
+
+            position: absolute;
+
+            bottom: 25px;
+
+            left: 14px;
+
+            right: 14px;
+
+            border-top:
+                1px solid
+                rgba(255,255,255,0.25);
+
+            padding-top: 15px;
+        }
+
+
+        /* =========================================
+           MAIN
+        ========================================= */
+
+        .main {
+
+            margin-left: 200px;
+
+            min-height: 100vh;
+        }
+
+
+        /* =========================================
+           TOPBAR
+        ========================================= */
+
+        .topbar {
+
+            height: 75px;
+
+            background: white;
+
+            border-bottom:
+                1px solid
+                #e5e7eb;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding:
+                0
+                28px;
+        }
+
+
+        .topbar h4 {
+
+            margin: 0;
+
+            font-size: 18px;
+
+            font-weight: 700;
+        }
+
+
+        .topbar small {
+
+            color: #6b7280;
+        }
+
+
+        .user-info {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+        }
+
+
+        .role-badge {
+
+            background: #e6f4f1;
+
+            color: #0f766e;
+
+            padding:
+                5px
+                10px;
+
+            border-radius: 20px;
+
+            font-size: 11px;
+        }
+
+
+        .user-icon {
+
+            width: 35px;
+            height: 35px;
+
+            background: #e6f4f1;
+
+            color: #0f766e;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+
+        /* =========================================
+           CONTENT
+        ========================================= */
+
+        .content {
+
+            padding: 28px;
+        }
+
+
+        .page-title {
+
+            margin-bottom: 22px;
+        }
+
+
+        .page-title h2 {
+
+            font-size: 24px;
+
+            font-weight: 700;
+
+            margin-bottom: 5px;
+        }
+
+
+        .page-title p {
+
+            color: #6b7280;
+
+            margin: 0;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================================
+           STATISTICS
+        ========================================= */
+
+        .stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .stat-card {
+
+            background: white;
+
+            border:
+                1px solid
+                #e5e7eb;
+
+            border-radius: 10px;
+
+            padding: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+
+        .stat-icon {
+
+            width: 45px;
+
+            height: 45px;
+
+            border-radius: 9px;
+
+            background: #e6f4f1;
+
+            color: #0f766e;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 19px;
+        }
+
+
+        .stat-card h3 {
+
+            margin: 0;
+
+            font-size: 23px;
+
+            font-weight: 700;
+        }
+
+
+        .stat-card p {
+
+            margin:
+                2px
+                0
+                0;
+
+            color: #6b7280;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================================
+           MAP CARD
+        ========================================= */
+
+        .map-card {
+
+            background: white;
+
+            border:
+                1px solid
+                #e5e7eb;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+        }
+
+
+        .map-header {
+
+            padding:
+                18px
+                22px;
+
+            border-bottom:
+                1px solid
+                #e5e7eb;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+
+        .map-header h4 {
+
+            margin: 0;
+
+            font-size: 17px;
+
+            font-weight: 700;
+        }
+
+
+        .map-header p {
+
+            margin:
+                4px
+                0
+                0;
+
+            color: #6b7280;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================================
+           MAP CONTROLS
+        ========================================= */
+
+        .map-controls {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+        }
+
+
+        .map-controls select {
+
+            border:
+                1px solid
+                #d1d5db;
+
+            border-radius: 6px;
+
+            padding:
+                7px
+                10px;
+
+            font-size: 12px;
+
+            background: white;
+
+            min-width: 130px;
+
+            cursor: pointer;
+        }
+
+
+        .map-controls select:focus {
+
+            outline: none;
+
+            border-color: #0f766e;
+
+            box-shadow:
+                0 0 0 2px
+                rgba(15,118,110,0.12);
+        }
+
+
+        #map {
+
+            height: 540px;
+
+            width: 100%;
+        }
+
+
+        /* =========================================
+           LEGEND
+        ========================================= */
+
+        .legend {
+
+            background: white;
+
+            padding:
+                12px
+                15px;
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 1px 8px
+                rgba(0,0,0,0.15);
+
+            line-height: 22px;
+
+            font-size: 12px;
+        }
+
+
+        .legend-title {
+
+            font-weight: 700;
+
+            margin-bottom: 5px;
+        }
+
+
+        .legend-item {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+        }
+
+
+        .legend-color {
+
+            width: 13px;
+
+            height: 13px;
+
+            border-radius: 50%;
+        }
+
+
+        .low {
+
+            background: #22c55e;
+        }
+
+
+        .moderate {
+
+            background: #facc15;
+        }
+
+
+        .high {
+
+            background: #f97316;
+        }
+
+
+        .critical {
+
+            background: #dc2626;
+        }
+
+
+        /* =========================================
+           INFORMATION
+        ========================================= */
+
+        .info-section {
+
+            margin-top: 22px;
+
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr;
+
+            gap: 20px;
+        }
+
+
+        .info-card {
+
+            background: white;
+
+            border:
+                1px solid
+                #e5e7eb;
+
+            border-radius: 10px;
+
+            padding: 22px;
+        }
+
+
+        .info-card h5 {
+
+            font-size: 16px;
+
+            margin-bottom: 15px;
+
+            font-weight: 700;
+        }
+
+
+        .area-row {
+
+            padding:
+                12px
+                0;
+
+            border-bottom:
+                1px solid
+                #f0f0f0;
+        }
+
+
+        .area-row:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .area-name {
+
+            font-size: 14px;
+
+            font-weight: 600;
+        }
+
+
+        .area-purok {
+
+            color: #6b7280;
+
+            font-size: 11px;
+
+            margin-top: 3px;
+        }
+
+
+        .area-cases {
+
+            font-weight: 700;
+
+            font-size: 14px;
+        }
+
+
+        .risk {
+
+            display: inline-block;
+
+            padding:
+                4px
+                9px;
+
+            border-radius: 15px;
+
+            font-size: 10px;
+
+            font-weight: 600;
+        }
+
+
+        .risk-low {
+
+            background: #dcfce7;
+
+            color: #15803d;
+        }
+
+
+        .risk-moderate {
+
+            background: #fef9c3;
+
+            color: #a16207;
+        }
+
+
+        .risk-high {
+
+            background: #ffedd5;
+
+            color: #c2410c;
+        }
+
+
+        .risk-critical {
+
+            background: #fee2e2;
+
+            color: #b91c1c;
+        }
+
+
+        /* =========================================
+           PUROK TABLE
+        ========================================= */
+
+        .purok-table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            margin-top: 8px;
+        }
+
+
+        .purok-table th {
+
+            text-align: left;
+
+            font-size: 11px;
+
+            color: #6b7280;
+
+            padding:
+                7px
+                5px;
+
+            border-bottom:
+                1px solid
+                #e5e7eb;
+        }
+
+
+        .purok-table td {
+
+            font-size: 12px;
+
+            padding:
+                8px
+                5px;
+
+            border-bottom:
+                1px solid
+                #f1f1f1;
+
+            vertical-align: top;
+        }
+
+
+        .purok-table tr:last-child td {
+
+            border-bottom: none;
+        }
+
+
+        /* =========================================
+           UNMATCHED
+        ========================================= */
+
+        .unmatched-card {
+
+            background: #fff7ed;
+
+            border:
+                1px solid
+                #fed7aa;
+
+            border-radius: 10px;
+
+            padding: 22px;
+
+            margin-top: 22px;
+
+            display: none;
+        }
+
+
+        .unmatched-card h5 {
+
+            color: #9a3412;
+
+            font-size: 16px;
+
+            margin-bottom: 10px;
+        }
+
+
+        .unmatched-item {
+
+            padding:
+                10px
+                0;
+
+            border-bottom:
+                1px solid
+                #fed7aa;
+
+            font-size: 13px;
+        }
+
+
+        .unmatched-item:last-child {
+
+            border-bottom: none;
+        }
+
+
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
+
+        @media (max-width: 1000px) {
+
+            .stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+
+            .info-section {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+
+                width: 70px;
+
+                padding:
+                    20px
+                    8px;
+            }
+
+
+            .brand-text,
+            .menu-title,
+            .sidebar a span {
+
+                display: none;
+            }
+
+
+            .brand {
+
+                justify-content: center;
+            }
+
+
+            .sidebar a {
+
+                justify-content: center;
+            }
+
+
+            .main {
+
+                margin-left: 70px;
+            }
+
+
+            .topbar {
+
+                padding:
+                    0
+                    15px;
+            }
+
+
+            .content {
+
+                padding: 15px;
+            }
+
+
+            .stats {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .map-header {
+
+                display: block;
+            }
+
+
+            .map-controls {
+
+                margin-top: 10px;
+
+                display: flex;
+
+                flex-wrap: wrap;
+            }
+
+
+            .map-controls select {
+
+                flex: 1;
+
+                min-width: 120px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+{% include 'includes/role_sidebar.html' %}
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<div class="main">
+
+
+    <!-- =================================================
+         TOPBAR
+    ================================================= -->
+
+    <div class="topbar">
+
+        <div>
+
+            <h4>
+                Hotspot Map
+            </h4>
+
+            <small>
+                DengueWatch Monitoring System
+            </small>
+
+        </div>
+
+
+        <div class="user-info">
+
+            <span class="role-badge">
+
+                {% if user.is_authenticated %}
+
+                    {{ user.get_username }}
+
+                {% else %}
+
+                    Authorized Personnel
+
+                {% endif %}
+
+            </span>
+
+
+            <div class="user-icon">
+
+                <i class="fa-solid fa-user"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         CONTENT
+    ================================================= -->
+
+    <div class="content">
+
+
+        <div class="page-title">
+
+            <h2>
+                Dengue Hotspot Map
+            </h2>
+
+            <p>
+                Dengue case distribution by Barangay and
+                Sitio / Purok / Street Name in Iligan City.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             STATISTICS
+        ================================================= -->
+
+        <div class="stats">
+
+
+            <!-- MONITORED BARANGAYS -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-location-dot"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ monitored_areas|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Monitored Barangays
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- HIGH RISK -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ high_risk_areas|default:"0" }}
+                    </h3>
+
+                    <p>
+                        High Risk Areas
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- TOTAL CASES -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-virus"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ total_cases|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Total Dataset Cases
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- PREDICTED HOTSPOTS -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-chart-line"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ predicted_hotspots|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Predicted Hotspots
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             MAP
+        ================================================= -->
+
+        <div class="map-card">
+
+
+            <div class="map-header">
+
+                <div>
+
+                    <h4>
+
+                        <i
+                            class="fa-solid fa-map-location-dot"
+                        ></i>
+
+                        Iligan City Dengue Risk Map
+
+                    </h4>
+
+
+                    <p>
+
+                        Barangay boundaries are colored
+                        according to dengue case volume.
+
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     FILTERS
+                ================================================= -->
+
+                <div class="map-controls">
+
+
+                    <!-- YEAR DROPDOWN -->
+
+                    <select id="yearFilter">
+
+                        <option value="all">
+                            All Years
+                        </option>
+
+                        {% for year in available_years %}
+
+                            <option
+                                value="{{ year }}"
+                                {% if selected_year == year %}selected{% endif %}
+                            >
+                                {{ year }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+
+                    <!-- RISK DROPDOWN -->
+
+                    <select id="riskFilter">
+
+                        <option value="all">
+                            All Risk Levels
+                        </option>
+
+                        <option value="low">
+                            Low Risk
+                        </option>
+
+                        <option value="moderate">
+                            Moderate Risk
+                        </option>
+
+                        <option value="high">
+                            High Risk
+                        </option>
+
+                        <option value="critical">
+                            Critical Risk
+                        </option>
+
+                    </select>
+
+
+                </div>
+
+            </div>
+
+
+            <div id="map"></div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             TOP BARANGAYS
+        ================================================= -->
+
+        <div class="info-section">
+
+
+            <div class="info-card">
+
+                <h5>
+
+                    <i
+                        class="fa-solid fa-ranking-star"
+                    ></i>
+
+                    Highest Case Barangays
+
+                </h5>
+
+
+                {% for area in hotspots|slice:":10" %}
+
+
+                    <div class="area-row">
+
+
+                        <div
+                            class="
+                                d-flex
+                                justify-content-between
+                                align-items-start
+                                gap-3
+                            "
+                        >
+
+
+                            <div>
+
+                                <div class="area-name">
+
+                                    {{ area.barangay }}
+
+                                </div>
+
+
+                                <div class="area-purok">
+
+                                    {{ area.puroks|length }}
+
+                                    recorded
+                                    Sitio / Purok /
+                                    Street entries
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="text-end">
+
+
+                                <div class="area-cases">
+
+                                    {{ area.case_count }}
+
+                                    cases
+
+                                </div>
+
+
+                                <span
+                                    class="
+                                        risk
+                                        risk-{{ area.risk_level|lower }}
+                                    "
+                                >
+
+                                    {{ area.risk_level }}
+
+                                </span>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                {% empty %}
+
+
+                    <p class="text-muted">
+
+                        No dengue data found.
+
+                    </p>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+            <!-- =================================================
+                 INFORMATION
+            ================================================= -->
+
+            <div class="info-card">
+
+                <h5>
+
+                    <i
+                        class="fa-solid fa-circle-info"
+                    ></i>
+
+                    Map Information
+
+                </h5>
+
+
+                <p
+                    style="
+                        font-size:13px;
+                        color:#6b7280;
+                        line-height:1.7;
+                    "
+                >
+
+                    This map uses the dengue records
+                    contained in the loaded CSV datasets.
+
+                    Each record is grouped according to
+                    its reported Barangay and
+                    Sitio / Purok / Street Name.
+
+                </p>
+
+
+                <p
+                    style="
+                        font-size:13px;
+                        color:#6b7280;
+                        line-height:1.7;
+                    "
+                >
+
+                    The map uses official barangay
+                    boundaries for geographic
+                    visualization.
+
+                    Individual Sitio / Purok /
+                    Street locations are displayed
+                    in the barangay popup.
+
+                </p>
+
+
+                <p
+                    style="
+                        font-size:12px;
+                        color:#9ca3af;
+                        margin-bottom:0;
+                    "
+                >
+
+                    Risk levels are based on case-volume
+                    thresholds used by this dashboard.
+                    They are not an official DOH
+                    epidemiological classification.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             ALL BARANGAY DETAILS
+        ================================================= -->
+
+        <div class="info-card mt-4">
+
+            <h5>
+
+                <i
+                    class="fa-solid fa-list"
+                ></i>
+
+                Barangay and
+                Sitio / Purok / Street Details
+
+            </h5>
+
+
+            {% for area in hotspots %}
+
+
+                <div class="area-row">
+
+
+                    <div
+                        class="
+                            d-flex
+                            justify-content-between
+                            align-items-start
+                            gap-3
+                        "
+                    >
+
+
+                        <div style="width:100%;">
+
+
+                            <div class="area-name">
+
+                                {{ area.barangay }}
+
+                            </div>
+
+
+                            <div class="area-purok">
+
+                                {{ area.city }}
+
+                                —
+
+                                {{ area.case_count }}
+
+                                dengue cases
+
+                            </div>
+
+
+                            <table
+                                class="purok-table"
+                            >
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Sitio / Purok /
+                                            Street Name
+                                        </th>
+
+                                        <th
+                                            style="
+                                                width:80px;
+                                                text-align:right;
+                                            "
+                                        >
+                                            Cases
+                                        </th>
+
+                                        <th
+                                            style="
+                                                width:100px;
+                                                text-align:right;
+                                            "
+                                        >
+                                            Level
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+
+                                    {% for purok in area.puroks %}
+
+
+                                        <tr>
+
+                                            <td>
+
+                                                {{ purok.purok }}
+
+                                            </td>
+
+
+                                            <td
+                                                style="
+                                                    text-align:right;
+                                                "
+                                            >
+
+                                                {{ purok.case_count }}
+
+                                            </td>
+
+
+                                            <td
+                                                style="
+                                                    text-align:right;
+                                                "
+                                            >
+
+                                                <span
+                                                    class="
+                                                        risk
+                                                        risk-{{ purok.risk_level|lower }}
+                                                    "
+                                                >
+
+                                                    {{ purok.risk_level }}
+
+                                                </span>
+
+                                            </td>
+
+                                        </tr>
+
+
+                                    {% empty %}
+
+
+                                        <tr>
+
+                                            <td
+                                                colspan="3"
+                                                class="text-muted"
+                                            >
+
+                                                No
+                                                Sitio /
+                                                Purok /
+                                                Street
+                                                information.
+
+                                            </td>
+
+                                        </tr>
+
+
+                                    {% endfor %}
+
+
+                                </tbody>
+
+                            </table>
+
+
+                        </div>
+
+
+                        <div class="text-end">
+
+                            <strong>
+                                {{ area.case_count }}
+                            </strong>
+
+                            <br>
+
+                            <span
+                                class="
+                                    risk
+                                    risk-{{ area.risk_level|lower }}
+                                "
+                            >
+
+                                {{ area.risk_level }}
+
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            {% empty %}
+
+
+                <p class="text-muted">
+
+                    No dengue records found.
+
+                </p>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+        <!-- =================================================
+             UNMATCHED BARANGAYS
+        ================================================= -->
+
+        <div
+            id="unmatchedCard"
+            class="unmatched-card"
+        >
+
+            <h5>
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                Unmatched Barangay Locations
+
+            </h5>
+
+
+            <div id="unmatchedList"></div>
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     LEAFLET
+===================================================== -->
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+
+<script>
+
+
+/* =====================================================
+   DATA FROM DJANGO
+===================================================== */
+
+const hotspotData =
+    {{ map_locations_json|safe }};
+
+
+console.log(
+    "DengueWatch hotspot data:",
+    hotspotData
+);
+
+
+/* =====================================================
+   MAP
+===================================================== */
+
+const map = L.map("map", {
+    zoomControl: true,
+    minZoom: 10,
+    maxZoom: 18
+}).setView(
+    [8.2280, 124.2452],
+    12
+);
+
+
+/* =====================================================
+   BASE MAP
+
+   CARTO is used as the visual basemap.
+   OpenStreetMap data attribution is still displayed
+   because CARTO's basemap uses OSM geographic data.
+===================================================== */
+
+const baseMap = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    {
+        attribution:
+            '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: "abcd",
+        maxZoom: 20
+    }
+);
+
+baseMap.addTo(map);
+
+
+/* =====================================================
+   BASEMAP ERROR HANDLING
+===================================================== */
+
+baseMap.on("tileerror", function(error) {
+    console.warn(
+        "A background map tile could not be loaded:",
+        error
+    );
+});
+
+
+/* =====================================================
+   NORMALIZE BARANGAY NAME
+===================================================== */
+
+function normalizeName(value) {
+
+    return String(
+        value || ""
+    )
+    .toLowerCase()
+    .replace(
+        /[-]+/g,
+        " "
+    )
+    .replace(
+        /\s+/g,
+        " "
+    )
+    .trim();
+
+}
+
+
+/* =====================================================
+   DATA LOOKUP
+===================================================== */
+
+const dataByBarangay = {};
+
+
+hotspotData.forEach(
+    function(area) {
+
+        const boundaryNames =
+            area.boundary_names || [area.barangay];
+
+        boundaryNames.forEach(function(name) {
+            dataByBarangay[normalizeName(name)] = area;
+        });
+
+    }
+);
+
+
+/* =====================================================
+   RISK COLOR
+===================================================== */
+
+function getRiskColor(risk) {
+
+    risk =
+        String(
+            risk || ""
+        ).toLowerCase();
+
+
+    if (risk === "low") {
+
+        return "#22c55e";
+
+    }
+
+
+    if (risk === "moderate") {
+
+        return "#facc15";
+
+    }
+
+
+    if (risk === "high") {
+
+        return "#f97316";
+
+    }
+
+
+    if (risk === "critical") {
+
+        return "#dc2626";
+
+    }
+
+
+    return "#d1d5db";
+
+}
+
+
+/* =====================================================
+   RISK OPACITY
+===================================================== */
+
+function getRiskOpacity(risk) {
+
+    risk =
+        String(
+            risk || ""
+        ).toLowerCase();
+
+
+    if (risk === "critical") {
+
+        return 0.80;
+
+    }
+
+
+    if (risk === "high") {
+
+        return 0.70;
+
+    }
+
+
+    if (risk === "moderate") {
+
+        return 0.60;
+
+    }
+
+
+    if (risk === "low") {
+
+        return 0.50;
+
+    }
+
+
+    return 0.20;
+
+}
+
+
+/* =====================================================
+   HTML ESCAPE
+===================================================== */
+
+function escapeHTML(value) {
+
+    return String(
+        value || ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+/* =====================================================
+   PUROK HTML
+===================================================== */
+
+function createPurokHTML(area) {
+
+    if (
+        !area.puroks ||
+        area.puroks.length === 0
+    ) {
+
+        return `
+
+            <p
+                style="
+                    color:#6b7280;
+                    font-size:12px;
+                "
+            >
+
+                No Sitio / Purok /
+                Street information.
+
+            </p>
+
+        `;
+
+    }
+
+
+    let html = `
+
+        <div
+            style="
+                max-height:250px;
+                overflow-y:auto;
+                margin-top:8px;
+            "
+        >
+
+            <table
+                style="
+                    width:100%;
+                    border-collapse:collapse;
+                    font-size:12px;
+                "
+            >
+
+                <thead>
+
+                    <tr>
+
+                        <th
+                            style="
+                                text-align:left;
+                                padding:6px;
+                                border-bottom:
+                                    1px solid #ddd;
+                            "
+                        >
+                            Sitio / Purok /
+                            Street Name
+                        </th>
+
+                        <th
+                            style="
+                                text-align:right;
+                                padding:6px;
+                                border-bottom:
+                                    1px solid #ddd;
+                            "
+                        >
+                            Cases
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+    `;
+
+
+    area.puroks.forEach(
+        function(purok) {
+
+            html += `
+
+                <tr>
+
+                    <td
+                        style="
+                            padding:6px;
+                            border-bottom:
+                                1px solid #eee;
+                        "
+                    >
+
+                        ${escapeHTML(
+                            purok.purok
+                        )}
+
+                    </td>
+
+                    <td
+                        style="
+                            padding:6px;
+                            text-align:right;
+                            border-bottom:
+                                1px solid #eee;
+                            font-weight:700;
+                        "
+                    >
+
+                        ${purok.case_count}
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+
+    return html;
+
+}
+
+
+/* =====================================================
+   SELECTED YEAR DATA
+===================================================== */
+
+let selectedYear = "all";
+
+let selectedRisk = "all";
+
+
+function getSelectedAreaData(area) {
+
+    /*
+    All Years = use the original
+    combined dataset.
+    */
+
+    if (
+        selectedYear === "all"
+    ) {
+
+        return area;
+
+    }
+
+
+    /*
+    Selected Year
+    */
+
+    if (
+        area.year_data &&
+        area.year_data[selectedYear]
+    ) {
+
+        return {
+
+            ...area,
+
+            case_count:
+                area.year_data[
+                    selectedYear
+                ].case_count,
+
+            risk_level:
+                area.year_data[
+                    selectedYear
+                ].risk_level
+
+        };
+
+    }
+
+
+    /*
+    No data for selected year
+    */
+
+    return null;
+
+}
+
+
+/* =====================================================
+   CREATE POPUP
+===================================================== */
+
+function createPopupHTML(
+    area,
+    officialName
+) {
+
+    const selectedData =
+        getSelectedAreaData(area);
+
+
+    /*
+    NO DATA FOR SELECTED YEAR
+    */
+
+    if (!selectedData) {
+
+        return `
+
+            <div
+                style="
+                    min-width:220px;
+                "
+            >
+
+                <strong>
+
+                    ${escapeHTML(
+                        officialName
+                    )}
+
+                </strong>
+
+                <hr>
+
+                <span
+                    style="
+                        color:#6b7280;
+                        font-size:12px;
+                    "
+                >
+
+                    No dengue records were
+                    found for this barangay
+                    in ${escapeHTML(
+                        selectedYear
+                    )}.
+
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+
+    const risk =
+        String(
+            selectedData.risk_level || ""
+        ).toLowerCase();
+
+
+    const yearLabel =
+        selectedYear === "all"
+            ? "All Years"
+            : selectedYear;
+
+
+    return `
+
+        <div
+            style="
+                min-width:300px;
+                max-width:380px;
+            "
+        >
+
+            <h5
+                style="
+                    margin-bottom:3px;
+                    font-weight:700;
+                "
+            >
+
+                ${escapeHTML(
+                    area.barangay
+                )}
+
+            </h5>
+
+
+            <div
+                style="
+                    color:#6b7280;
+                    font-size:12px;
+                "
+            >
+
+                ${escapeHTML(
+                    area.city
+                )}
+
+            </div>
+
+
+            <hr>
+
+
+            <div>
+
+                <strong>
+                    Selected Year:
+                </strong>
+
+                ${escapeHTML(
+                    yearLabel
+                )}
+
+            </div>
+
+
+            <div
+                style="
+                    margin-top:5px;
+                "
+            >
+
+                <strong>
+                    Dengue Cases:
+                </strong>
+
+                ${selectedData.case_count}
+
+            </div>
+
+
+            <div
+                style="
+                    margin-top:5px;
+                "
+            >
+
+                <strong>
+                    Risk Level:
+                </strong>
+
+                <span
+                    style="
+                        font-weight:700;
+                        color:
+                        ${getRiskColor(
+                            selectedData.risk_level
+                        )};
+                    "
+                >
+
+                    ${String(
+                        selectedData.risk_level
+                    ).toUpperCase()}
+
+                </span>
+
+            </div>
+
+
+            <hr>
+
+
+            <strong>
+
+                Sitio / Purok /
+                Street Name
+
+            </strong>
+
+
+            ${createPurokHTML(
+                area
+            )}
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================================
+   OFFICIAL ILIGAN CITY BARANGAY BOUNDARIES
+===================================================== */
+
+const geoJsonURL = "/api/mobile/boundaries/";
+
+
+let barangayLayer = null;
+
+
+/* =====================================================
+   APPLY YEAR + RISK FILTER
+===================================================== */
+
+function applyFilters() {
+
+    if (!barangayLayer) {
+
+        return;
+
+    }
+
+
+    barangayLayer.eachLayer(
+        function(layer) {
+
+            const officialName =
+                layer.feature
+                    .properties
+                    .brgy_name;
+
+
+            const area =
+                dataByBarangay[
+                    normalizeName(
+                        officialName
+                    )
+                ];
+
+
+            /*
+            NO BARANGAY DATA
+            */
+
+            if (!area) {
+
+                layer.setStyle({
+
+                    color:
+                        "#9ca3af",
+
+                    weight:
+                        1,
+
+                    fillColor:
+                        "#d1d5db",
+
+                    fillOpacity:
+                        0.08,
+
+                    opacity:
+                        0.4
+
+                });
+
+                return;
+
+            }
+
+
+            /*
+            GET DATA FOR SELECTED YEAR
+            */
+
+            const selectedData =
+                getSelectedAreaData(
+                    area
+                );
+
+
+            /*
+            NO DATA FOR SELECTED YEAR
+            */
+
+            if (!selectedData) {
+
+                layer.setStyle({
+
+                    color:
+                        "#9ca3af",
+
+                    weight:
+                        1,
+
+                    fillColor:
+                        "#d1d5db",
+
+                    fillOpacity:
+                        0.08,
+
+                    opacity:
+                        0.3
+
+                });
+
+                return;
+
+            }
+
+
+            const risk =
+                String(
+                    selectedData.risk_level || ""
+                ).toLowerCase();
+
+
+            /*
+            RISK FILTER
+            */
+
+            if (
+                selectedRisk !== "all" &&
+                risk !== selectedRisk
+            ) {
+
+                layer.setStyle({
+
+                    color:
+                        "#9ca3af",
+
+                    weight:
+                        1,
+
+                    fillColor:
+                        "#d1d5db",
+
+                    fillOpacity:
+                        0.10,
+
+                    opacity:
+                        0.35
+
+                });
+
+                return;
+
+            }
+
+
+            /*
+            HIGHLIGHT AREA
+            */
+
+            layer.setStyle({
+
+                color:
+                    "#ffffff",
+
+                weight:
+                    1.5,
+
+                fillColor:
+                    getRiskColor(
+                        selectedData.risk_level
+                    ),
+
+                fillOpacity:
+                    getRiskOpacity(
+                        selectedData.risk_level
+                    ),
+
+                opacity:
+                    1
+
+            });
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   LOAD BARANGAY BOUNDARIES
+===================================================== */
+
+fetch(
+    geoJsonURL
+)
+
+.then(
+    function(response) {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to load official barangay boundaries."
+            );
+
+        }
+
+
+        return response.json();
+
+    }
+)
+
+.then(
+    function(geojson) {
+
+
+        barangayLayer =
+            L.geoJSON(
+                geojson,
+                {
+
+
+                    /* =================================
+                       STYLE
+                    ================================= */
+
+                    style:
+                        function(feature) {
+
+                            const officialName =
+                                feature.properties
+                                    .brgy_name;
+
+
+                            const area =
+                                dataByBarangay[
+                                    normalizeName(
+                                        officialName
+                                    )
+                                ];
+
+
+                            /*
+                            NO DATA
+                            */
+
+                            if (!area) {
+
+                                return {
+
+                                    color:
+                                        "#9ca3af",
+
+                                    weight:
+                                        1,
+
+                                    fillColor:
+                                        "#d1d5db",
+
+                                    fillOpacity:
+                                        0.15
+
+                                };
+
+                            }
+
+
+                            /*
+                            GET SELECTED YEAR DATA
+                            */
+
+                            const selectedData =
+                                getSelectedAreaData(
+                                    area
+                                );
+
+
+                            if (!selectedData) {
+
+                                return {
+
+                                    color:
+                                        "#9ca3af",
+
+                                    weight:
+                                        1,
+
+                                    fillColor:
+                                        "#d1d5db",
+
+                                    fillOpacity:
+                                        0.08
+
+                                };
+
+                            }
+
+
+                            return {
+
+                                color:
+                                    "#ffffff",
+
+                                weight:
+                                    1.5,
+
+                                fillColor:
+                                    getRiskColor(
+                                        selectedData
+                                            .risk_level
+                                    ),
+
+                                fillOpacity:
+                                    getRiskOpacity(
+                                        selectedData
+                                            .risk_level
+                                    )
+
+                            };
+
+                        },
+
+
+                    /* =================================
+                       POPUP + HOVER
+                    ================================= */
+
+                    onEachFeature:
+                        function(
+                            feature,
+                            layer
+                        ) {
+
+
+                            const officialName =
+                                feature.properties
+                                    .brgy_name;
+
+
+                            const area =
+                                dataByBarangay[
+                                    normalizeName(
+                                        officialName
+                                    )
+                                ];
+
+
+                            /*
+                            =================================
+                            NO DATA
+                            =================================
+                            */
+
+                            if (!area) {
+
+                                layer.bindPopup(`
+
+                                    <div
+                                        style="
+                                            min-width:220px;
+                                        "
+                                    >
+
+                                        <strong>
+
+                                            ${escapeHTML(
+                                                officialName
+                                            )}
+
+                                        </strong>
+
+
+                                        <hr>
+
+
+                                        <span
+                                            style="
+                                                color:#6b7280;
+                                                font-size:12px;
+                                            "
+                                        >
+
+                                            No dengue
+                                            records were
+                                            found for this
+                                            barangay in the
+                                            loaded datasets.
+
+                                        </span>
+
+                                    </div>
+
+                                `);
+
+                            }
+
+
+                            /*
+                            =================================
+                            DATA POPUP
+                            =================================
+                            */
+
+                            else {
+
+                                layer.bindPopup(
+                                    function() {
+
+                                        return createPopupHTML(
+                                            area,
+                                            officialName
+                                        );
+
+                                    }
+                                );
+
+                            }
+
+
+                            /*
+                            =================================
+                            HOVER
+                            =================================
+                            */
+
+                            layer.on(
+                                "mouseover",
+                                function() {
+
+                                    layer.setStyle({
+
+                                        weight:
+                                            3,
+
+                                        color:
+                                            "#111827"
+
+                                    });
+
+                                }
+                            );
+
+
+                            layer.on(
+                                "mouseout",
+                                function() {
+
+                                    barangayLayer
+                                        .resetStyle(
+                                            layer
+                                        );
+
+                                    /*
+                                    Reapply current
+                                    filters after reset.
+                                    */
+
+                                    applyFilters();
+
+                                }
+                            );
+
+                        }
+
+                }
+
+            )
+            .addTo(map);
+
+
+        /* =================================
+           FIT MAP TO ILIGAN
+        ================================= */
+
+        try {
+
+            map.fitBounds(
+                barangayLayer.getBounds(),
+                {
+
+                    padding:
+                        [20, 20]
+
+                }
+            );
+
+        }
+        catch(error) {
+
+            console.log(
+                "Could not fit map bounds.",
+                error
+            );
+
+        }
+
+
+        /* =================================
+           APPLY INITIAL FILTERS
+        ================================= */
+
+        applyFilters();
+
+
+        /* =================================
+           CHECK UNMATCHED BARANGAYS
+        ================================= */
+
+        showUnmatchedLocations(
+            geojson
+        );
+
+    }
+)
+
+.catch(
+    function(error) {
+
+        console.error(
+            error
+        );
+
+
+        document.getElementById(
+            "map"
+        ).innerHTML = `
+
+            <div
+                style="
+                    padding:40px;
+                    text-align:center;
+                    color:#6b7280;
+                "
+            >
+
+                <i
+                    class="
+                        fa-solid
+                        fa-triangle-exclamation
+                    "
+                    style="
+                        font-size:32px;
+                        margin-bottom:15px;
+                    "
+                ></i>
+
+
+                <h5>
+                    Unable to load barangay boundaries
+                </h5>
+
+
+                <p
+                    style="
+                        font-size:13px;
+                    "
+                >
+
+                    Please check your internet
+                    connection and try again.
+
+                </p>
+
+            </div>
+
+        `;
+
+    }
+);
+
+
+/* =====================================================
+   UNMATCHED BARANGAYS
+===================================================== */
+
+function showUnmatchedLocations(
+    geojson
+) {
+
+    const officialNames = {};
+
+
+    geojson.features.forEach(
+        function(feature) {
+
+            const name =
+                feature.properties
+                    .brgy_name;
+
+
+            officialNames[
+                normalizeName(name)
+            ] = true;
+
+        }
+    );
+
+
+    const unmatched =
+        hotspotData.filter(
+            function(area) {
+
+                return !officialNames[
+                    normalizeName(
+                        area.barangay
+                    )
+                ];
+
+            }
+        );
+
+
+    if (
+        unmatched.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    const card =
+        document.getElementById(
+            "unmatchedCard"
+        );
+
+
+    const list =
+        document.getElementById(
+            "unmatchedList"
+        );
+
+
+    if (!card || !list) {
+
+        return;
+
+    }
+
+
+    card.style.display =
+        "block";
+
+
+    unmatched.forEach(
+        function(area) {
+
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.className =
+                "unmatched-item";
+
+
+            const puroks =
+                area.puroks
+                    .slice(0, 5)
+                    .map(
+                        function(p) {
+
+                            return (
+
+                                escapeHTML(
+                                    p.purok
+                                )
+                                +
+                                " ("
+                                +
+                                p.case_count
+                                +
+                                " cases)"
+
+                            );
+
+                        }
+                    )
+                    .join(", ");
+
+
+            item.innerHTML = `
+
+                <strong>
+
+                    ${escapeHTML(
+                        area.barangay
+                    )}
+
+                </strong>
+
+
+                —
+                ${area.case_count}
+                cases
+
+
+                <br>
+
+
+                <small>
+
+                    Sitio / Purok /
+                    Street Name:
+
+                    ${puroks}
+
+                </small>
+
+            `;
+
+
+            list.appendChild(
+                item
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   YEAR FILTER
+===================================================== */
+
+document
+    .getElementById(
+        "yearFilter"
+    )
+    .addEventListener(
+        "change",
+        function() {
+
+            selectedYear =
+                this.value;
+
+
+            console.log(
+                "Selected year:",
+                selectedYear
+            );
+
+
+            applyFilters();
+
+
+            /*
+            Close currently opened popup
+            so that it refreshes when opened.
+            */
+
+            map.closePopup();
+
+        }
+    );
+
+
+/* =====================================================
+   RISK FILTER
+===================================================== */
+
+document
+    .getElementById(
+        "riskFilter"
+    )
+    .addEventListener(
+        "change",
+        function() {
+
+            selectedRisk =
+                this.value;
+
+
+            console.log(
+                "Selected risk:",
+                selectedRisk
+            );
+
+
+            applyFilters();
+
+
+            /*
+            Close currently opened popup.
+            */
+
+            map.closePopup();
+
+        }
+    );
+
+
+/* =====================================================
+   LEGEND
+===================================================== */
+
+const legend =
+    L.control({
+
+        position:
+            "bottomright"
+
+    });
+
+
+legend.onAdd =
+    function() {
+
+
+        const div =
+            L.DomUtil.create(
+                "div",
+                "legend"
+            );
+
+
+        div.innerHTML = `
+
+            <div
+                class="legend-title"
+            >
+
+                Dengue Case Level
+
+            </div>
+
+
+            <div
+                class="legend-item"
+            >
+
+                <span
+                    class="
+                        legend-color
+                        low
+                    "
+                ></span>
+
+                Low
+                (1–5)
+
+            </div>
+
+
+            <div
+                class="legend-item"
+            >
+
+                <span
+                    class="
+                        legend-color
+                        moderate
+                    "
+                ></span>
+
+                Moderate
+                (6–50)
+
+            </div>
+
+
+            <div
+                class="legend-item"
+            >
+
+                <span
+                    class="
+                        legend-color
+                        high
+                    "
+                ></span>
+
+                High
+                (51–100)
+
+            </div>
+
+
+            <div
+                class="legend-item"
+            >
+
+                <span
+                    class="
+                        legend-color
+                        critical
+                    "
+                ></span>
+
+                Critical
+                (101+)
+
+            </div>
+
+        `;
+
+
+        return div;
+
+    };
+
+
+legend.addTo(
+    map
+);
+
+
+</script>
+
+
+</body>
+
+</html>

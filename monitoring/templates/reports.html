@@ -1,0 +1,434 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DengueWatch | CHO Reports &amp; Analytics</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7f9;
+        color: #1f2937;
+      }
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 250px;
+        background: #0f766e;
+        color: white;
+        padding: 25px 18px;
+      }
+      .brand {
+        display: flex;
+        gap: 11px;
+        align-items: center;
+        padding: 8px 10px 23px;
+        border-bottom: 1px solid #ffffff40;
+      }
+      .brand i {
+        font-size: 28px;
+      }
+      .brand strong {
+        font-size: 20px;
+      }
+      .brand small {
+        display: block;
+        font-size: 9px;
+        opacity: 0.75;
+      }
+      .nav-title {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.65;
+        margin: 21px 10px 8px;
+      }
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        color: white;
+        text-decoration: none;
+        padding: 11px;
+        border-radius: 8px;
+        font-size: 13px;
+      }
+      .sidebar a:hover,
+      .sidebar a.active {
+        background: #ffffff2e;
+      }
+      .sidebar a i {
+        width: 18px;
+      }
+      .main {
+        margin-left: 250px;
+        min-height: 100vh;
+      }
+      .topbar {
+        height: 74px;
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .topbar h5 {
+        margin: 0;
+        font-weight: 700;
+      }
+      .content {
+        padding: 29px 32px;
+      }
+      .heading {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        align-items: end;
+        margin-bottom: 20px;
+      }
+      .heading h2 {
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0;
+      }
+      .muted {
+        color: #6b7280;
+      }
+      .print {
+        border: 0;
+        background: #0f766e;
+        color: white;
+        padding: 9px 14px;
+        border-radius: 7px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 18px;
+      }
+      .stat,
+      .panel {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        box-shadow: 0 2px 8px #0f172a0a;
+      }
+      .stat {
+        padding: 18px;
+      }
+      .stat strong {
+        font-size: 24px;
+        display: block;
+      }
+      .stat span {
+        font-size: 10px;
+        color: #6b7280;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+      .panel-head {
+        padding: 16px 18px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .panel-head h5 {
+        font-size: 15px;
+        margin: 0;
+        font-weight: 700;
+      }
+      .panel-body {
+        padding: 18px;
+      }
+      .chart {
+        height: 280px;
+      }
+      .table-responsive {
+        max-height: 440px;
+      }
+      th {
+        background: #f8fafc !important;
+        font-size: 10px;
+        text-transform: uppercase;
+      }
+      td {
+        font-size: 12px;
+      }
+      .badge-risk {
+        padding: 5px 9px;
+        border-radius: 15px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .Low {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .Moderate {
+        background: #fef9c3;
+        color: #854d0e;
+      }
+      .High {
+        background: #ffedd5;
+        color: #c2410c;
+      }
+      .Critical {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .note {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 15px;
+      }
+      @media (max-width: 950px) {
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 700px) {
+        .sidebar {
+          position: relative;
+          width: 100%;
+        }
+        .sidebar nav {
+          display: flex;
+          overflow: auto;
+        }
+        .nav-title {
+          display: none;
+        }
+        .sidebar a {
+          white-space: nowrap;
+        }
+        .main {
+          margin-left: 0;
+        }
+        .content {
+          padding: 18px 12px;
+        }
+        .topbar {
+          padding: 0 14px;
+        }
+        .heading {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+      @media print {
+        .sidebar,
+        .topbar,
+        .print {
+          display: none;
+        }
+        .main {
+          margin: 0;
+        }
+        .content {
+          padding: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'includes/role_sidebar.html' %}
+    <div class="main">
+      <header class="topbar">
+        <div>
+          <h5>Reports &amp; Analytics</h5>
+          <small class="muted">City Health Office</small>
+        </div>
+        <span>{{ user.get_username }}</span>
+      </header>
+      <main class="content">
+        <section class="heading">
+          <div>
+            <h2>Citywide Dengue Analytics</h2>
+            <p class="muted mb-0">
+              Historical cases, demographics, and hotspot priorities.
+            </p>
+          </div>
+          <button class="print" onclick="window.print()">
+            <i class="fa-solid fa-print me-1"></i>Print report
+          </button>
+        </section>
+        <section class="stats">
+          <article class="stat">
+            <strong>{{ total_cases }}</strong><span>TOTAL CASES</span>
+          </article>
+          <article class="stat">
+            <strong>{{ monitored_barangays }}</strong
+            ><span>BARANGAYS MONITORED</span>
+          </article>
+          <article class="stat">
+            <strong>{{ high_risk_areas }}</strong
+            ><span>HIGH / CRITICAL AREAS</span>
+          </article>
+          <article class="stat">
+            <strong>{{ dataset_count }}</strong
+            ><span>SOURCE DATASETS</span>
+          </article>
+        </section>
+        <section class="grid">
+          <article class="panel">
+            <div class="panel-head"><h5>Cases by Year</h5></div>
+            <div class="panel-body">
+              <div class="chart"><canvas id="yearChart"></canvas></div>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h5>Cases by Sex</h5></div>
+            <div class="panel-body">
+              <div class="chart"><canvas id="sexChart"></canvas></div>
+            </div>
+          </article>
+        </section>
+        <section class="grid">
+          <article class="panel">
+            <div class="panel-head"><h5>Age Groups</h5></div>
+            <div class="panel-body">
+              <div class="chart"><canvas id="ageChart"></canvas></div>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h5>Blood Types</h5></div>
+            <div class="panel-body">
+              <div class="chart"><canvas id="bloodChart"></canvas></div>
+            </div>
+          </article>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><h5>Barangay Risk Ranking</h5></div>
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Barangay</th>
+                  <th>Cases</th>
+                  <th>Risk</th>
+                  <th>Top Purok / Area</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in hotspot_data %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td><strong>{{ row.barangay }}</strong></td>
+                  <td>{{ row.case_count }}</td>
+                  <td>
+                    <span class="badge-risk {{ row.risk_level }}"
+                      >{{ row.risk_level }}</span
+                    >
+                  </td>
+                  <td>
+                    {{ row.top_purok_name }} ({{ row.top_purok_cases }} cases)
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center p-4">
+                    No records are available.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <p class="note">
+          These analytics support surveillance and planning; they do not replace
+          medical or epidemiological assessment.
+        </p>
+      </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+      const yearData = [
+        {% for item in yearly_summary %}
+          ["{{ item.0 }}", {{ item.1 }}],
+        {% endfor %}
+      ];
+
+      const sexData = [
+        {% for item in sex_summary %}
+          ["{{ item.0 }}", {{ item.1 }}],
+        {% endfor %}
+      ];
+
+      const ageData = [
+        {% for item in age_group_summary %}
+          ["{{ item.0 }}", {{ item.1 }}],
+        {% endfor %}
+      ];
+
+      const bloodData = [
+        {% for item in blood_type_summary %}
+          ["{{ item.0 }}", {{ item.1 }}],
+        {% endfor %}
+      ];
+
+      function make(id, data, type = "bar") {
+        const canvas = document.getElementById(id);
+
+        if (!canvas || data.length === 0) {
+          return;
+        }
+
+        new Chart(canvas, {
+          type,
+          data: {
+            labels: data.map((x) => x[0]),
+            datasets: [
+              {
+                label: "Cases",
+                data: data.map((x) => x[1]),
+                backgroundColor:
+                  type === "doughnut"
+                    ? ["#0f766e", "#14b8a6", "#5eead4", "#f59e0b", "#dc2626"]
+                    : "#0f766e",
+                borderRadius: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: type === "doughnut" } },
+            scales:
+              type === "doughnut"
+                ? {}
+                : {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                    x: { grid: { display: false } },
+                  },
+          },
+        });
+      }
+      make("yearChart", yearData);
+      make("sexChart", sexData, "doughnut");
+      make("ageChart", ageData);
+      make("bloodChart", bloodData, "doughnut");
+    </script>
+  </body>
+</html>

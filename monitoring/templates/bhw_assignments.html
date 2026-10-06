@@ -1,0 +1,1338 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>BHW Assignments | DengueWatch</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7f9;
+            color: #1f2937;
+        }
+
+
+        /* =========================================
+           SIDEBAR
+        ========================================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #0f766e;
+            color: white;
+            padding: 28px 14px;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px 25px;
+            border-bottom:
+                1px solid rgba(255,255,255,0.25);
+        }
+
+        .brand i {
+            font-size: 25px;
+        }
+
+        .brand-text strong {
+            display: block;
+            font-size: 20px;
+        }
+
+        .brand-text small {
+            font-size: 9px;
+            opacity: 0.8;
+        }
+
+        .menu-title {
+            margin: 25px 10px 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 11px 10px;
+            margin-bottom: 4px;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background:
+                rgba(255,255,255,0.18);
+        }
+
+        .sidebar a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 14px;
+            right: 14px;
+            border-top:
+                1px solid rgba(255,255,255,0.25);
+            padding-top: 15px;
+        }
+
+
+        /* =========================================
+           MAIN
+        ========================================= */
+
+        .main {
+            margin-left: 200px;
+            min-height: 100vh;
+        }
+
+
+        /* =========================================
+           TOPBAR
+        ========================================= */
+
+        .topbar {
+            height: 75px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        .topbar h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .topbar small {
+            color: #6b7280;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            background: #e6f4f1;
+            color: #0f766e;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .user-icon {
+            width: 35px;
+            height: 35px;
+            background: #e6f4f1;
+            color: #0f766e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        /* =========================================
+           CONTENT
+        ========================================= */
+
+        .content {
+            padding: 28px;
+        }
+
+        .page-title {
+            margin-bottom: 22px;
+        }
+
+        .page-title h2 {
+            margin: 0 0 5px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+
+        /* =========================================
+           NOTICE
+        ========================================= */
+
+        .notice {
+            background: #e6f4f1;
+            border-left: 4px solid #0f766e;
+            padding: 15px 18px;
+            border-radius: 8px;
+            margin-bottom: 22px;
+            font-size: 13px;
+        }
+
+        .notice strong {
+            color: #0f766e;
+        }
+
+
+        /* =========================================
+           STATS
+        ========================================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 9px;
+            background: #e6f4f1;
+            color: #0f766e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            margin: 2px 0 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+
+        /* =========================================
+           CARD
+        ========================================= */
+
+        .card-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-title i {
+            color: #0f766e;
+        }
+
+        .card-subtitle {
+            color: #6b7280;
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+
+
+        /* =========================================
+           TABLE
+        ========================================= */
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .assignment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .assignment-table th {
+            background: #f8fafc;
+            color: #6b7280;
+            font-size: 11px;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        .assignment-table td {
+            font-size: 12px;
+            padding: 12px;
+            border-bottom: 1px solid #f1f1f1;
+            vertical-align: middle;
+        }
+
+        .assignment-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+
+        /* =========================================
+           BADGES
+        ========================================= */
+
+        .status-assigned {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 15px;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .status-unassigned {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 15px;
+            background: #fef9c3;
+            color: #a16207;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+
+        /* =========================================
+           BUTTONS
+        ========================================= */
+
+        .btn-assign {
+            background: #0f766e;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+
+        .btn-assign:hover {
+            background: #115e59;
+            color: white;
+        }
+
+        .btn-remove {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+
+        .btn-remove:hover {
+            background: #b91c1c;
+        }
+
+
+        /* =========================================
+           MODAL
+        ========================================= */
+
+        .modal-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-select,
+        .form-control {
+            font-size: 13px;
+        }
+
+
+        /* =========================================
+           EMPTY
+        ========================================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h5 {
+            font-size: 16px;
+            color: #374151;
+        }
+
+
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
+
+        @media (max-width: 1100px) {
+
+            .stats {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 70px;
+                padding: 20px 8px;
+            }
+
+            .brand-text,
+            .menu-title,
+            .sidebar a span {
+                display: none;
+            }
+
+            .brand {
+                justify-content: center;
+            }
+
+            .sidebar a {
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 70px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     SIDEBAR
+========================================= -->
+
+{% include 'includes/role_sidebar.html' %}
+
+
+<!-- =========================================
+     MAIN
+========================================= -->
+
+<div class="main">
+
+
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+
+
+        <div>
+
+            <h4>
+                BHW Assignments
+            </h4>
+
+            <small>
+                Barangay Health Worker Area Management
+            </small>
+
+        </div>
+
+
+        <div class="user-info">
+
+            <span class="role-badge">
+
+                {{ current_user_name }} · {{ current_user_role }}
+
+            </span>
+
+
+            <div class="user-icon">
+
+                <i class="fa-solid fa-user"></i>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- CONTENT -->
+
+    <div class="content">
+
+
+        <!-- MESSAGES -->
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div
+                    class="
+                        alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                    "
+                >
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+
+        <!-- PAGE TITLE -->
+
+        <div class="page-title">
+
+            <h2>
+                BHW Area Assignments
+            </h2>
+
+            <p>
+                Assign approved Barangay Health Worker accounts
+                to their designated Barangay and Purok.
+            </p>
+
+        </div>
+
+
+        <!-- NOTICE -->
+
+        <div class="notice">
+
+            <strong>
+
+                <i class="fa-solid fa-circle-info"></i>
+
+                City Health Office Area Assignment
+
+            </strong>
+
+            <br>
+
+            BHW accounts can only monitor dengue information
+            for the Barangay and Purok assigned by the
+            City Health Office.
+
+        </div>
+
+
+        <!-- =========================================
+             SUMMARY
+        ========================================= -->
+
+        <div class="stats">
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-user-nurse"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ total_bhw|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Approved BHW Accounts
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ assigned_bhw|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Assigned BHW
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ unassigned_bhw|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Unassigned BHW
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-location-dot"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ barangay_count|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Available Barangays
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =========================================
+             TABLE
+        ========================================= -->
+
+        <div class="card-box">
+
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-users"></i>
+
+                Approved BHW Accounts
+
+            </div>
+
+
+            <div class="card-subtitle">
+
+                Assign or update the monitoring area of
+                each approved BHW account.
+
+            </div>
+
+
+            {% if bhw_users %}
+
+
+                <div class="table-responsive">
+
+
+                    <table class="assignment-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    BHW
+                                </th>
+
+                                <th>
+                                    Username
+                                </th>
+
+                                <th>
+                                    Assigned Barangay
+                                </th>
+
+                                <th>
+                                    Assigned Purok
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            {% for bhw in bhw_users %}
+
+
+                                <tr>
+
+
+                                    <!-- NAME -->
+
+                                    <td>
+
+                                        <strong>
+
+                                            {% if bhw.first_name or bhw.last_name %}
+
+                                                {{ bhw.first_name }}
+                                                {{ bhw.last_name }}
+
+                                            {% else %}
+
+                                                {{ bhw.username }}
+
+                                            {% endif %}
+
+                                        </strong>
+
+                                    </td>
+
+
+                                    <!-- USERNAME -->
+
+                                    <td>
+
+                                        {{ bhw.username }}
+
+                                    </td>
+
+
+                                    <!-- BARANGAY -->
+
+                                    <td>
+
+                                        {% if bhw.assigned_barangay %}
+
+                                            {{ bhw.assigned_barangay.barangay_name }}
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                Not Assigned
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- PUROK -->
+
+                                    <td>
+
+                                        {% if bhw.assigned_purok %}
+
+                                            {{ bhw.assigned_purok.purok_name }}
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+
+                                                {% if bhw.assigned_barangay %}
+
+                                                    Barangay-wide
+
+                                                {% else %}
+
+                                                    —
+
+                                                {% endif %}
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- STATUS -->
+
+                                    <td>
+
+                                        {% if bhw.assigned_barangay %}
+
+                                            <span class="status-assigned">
+
+                                                Assigned
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="status-unassigned">
+
+                                                Unassigned
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- ACTION -->
+
+                                    <td>
+
+
+                                        <div class="d-flex gap-2">
+
+
+                                            <button
+                                                type="button"
+                                                class="btn-assign"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#assignModal{{ bhw.id }}"
+                                            >
+
+                                                <i class="fa-solid fa-location-dot"></i>
+
+                                                {% if bhw.assigned_barangay %}
+
+                                                    Edit
+
+                                                {% else %}
+
+                                                    Assign
+
+                                                {% endif %}
+
+                                            </button>
+
+
+                                            {% if bhw.assigned_barangay %}
+
+
+                                                <form
+                                                    method="POST"
+                                                    action="{% url 'remove_bhw_assignment' bhw.id %}"
+                                                >
+
+                                                    {% csrf_token %}
+
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn-remove"
+                                                        onclick="
+                                                            return confirm(
+                                                                'Remove the area assignment for {{ bhw.username }}?'
+                                                            );
+                                                        "
+                                                    >
+
+                                                        <i class="fa-solid fa-xmark"></i>
+
+                                                        Remove
+
+                                                    </button>
+
+
+                                                </form>
+
+
+                                            {% endif %}
+
+
+                                        </div>
+
+
+                                    </td>
+
+
+                                </tr>
+
+
+                                <!-- =========================================
+                                     ASSIGN MODAL
+                                ========================================= -->
+
+                                <div
+                                    class="modal fade"
+                                    id="assignModal{{ bhw.id }}"
+                                    tabindex="-1"
+                                >
+
+                                    <div class="modal-dialog">
+
+                                        <div class="modal-content">
+
+
+                                            <form
+                                                method="POST"
+                                                action="{% url 'assign_bhw_area' bhw.id %}"
+                                            >
+
+                                                {% csrf_token %}
+
+
+                                                <!-- HEADER -->
+
+                                                <div class="modal-header">
+
+                                                    <div>
+
+                                                        <h5
+                                                            class="modal-title"
+                                                        >
+
+                                                            Assign BHW Monitoring Area
+
+                                                        </h5>
+
+                                                        <small
+                                                            class="text-muted"
+                                                        >
+
+                                                            {{ bhw.username }}
+
+                                                        </small>
+
+                                                    </div>
+
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn-close"
+                                                        data-bs-dismiss="modal"
+                                                    ></button>
+
+                                                </div>
+
+
+                                                <!-- BODY -->
+
+                                                <div class="modal-body">
+
+
+                                                    <!-- ACCOUNT -->
+
+                                                    <div class="mb-3">
+
+                                                        <label
+                                                            class="modal-label"
+                                                        >
+                                                            BHW Account
+                                                        </label>
+
+                                                        <input
+                                                            type="text"
+                                                            class="form-control"
+                                                            value="{{ bhw.username }}"
+                                                            disabled
+                                                        >
+
+                                                    </div>
+
+
+                                                    <!-- BARANGAY -->
+
+                                                    <div class="mb-3">
+
+                                                        <label
+                                                            class="modal-label"
+                                                        >
+
+                                                            Assigned Barangay
+                                                            <span class="text-danger">*</span>
+
+                                                        </label>
+
+
+                                                        <select
+                                                            name="barangay"
+                                                            class="form-select barangay-select"
+                                                            data-user="{{ bhw.id }}"
+                                                            required
+                                                        >
+
+                                                            <option value="">
+                                                                Select Barangay
+                                                            </option>
+
+
+                                                            {% for barangay in barangays %}
+
+                                                                <option
+                                                                    value="{{ barangay.barangay_id }}"
+                                                                    {% if bhw.assigned_barangay and bhw.assigned_barangay.barangay_id == barangay.barangay_id %}
+                                                                        selected
+                                                                    {% endif %}
+                                                                >
+
+                                                                    {{ barangay.barangay_name }}
+
+                                                                </option>
+
+                                                            {% endfor %}
+
+
+                                                        </select>
+
+                                                    </div>
+
+
+                                                    <!-- PUROK -->
+
+                                                    <div class="mb-3">
+
+                                                        <label
+                                                            class="modal-label"
+                                                        >
+
+                                                            Assigned Purok
+
+                                                        </label>
+
+
+                                                        <select
+                                                            name="purok"
+                                                            class="form-select purok-select"
+                                                            id="purokSelect{{ bhw.id }}"
+                                                        >
+
+                                                            <option value="">
+                                                                Barangay-wide monitoring
+                                                            </option>
+
+
+                                                            {% for purok in puroks %}
+
+                                                                <option
+                                                                    value="{{ purok.purok_id }}"
+                                                                    data-barangay="{{ purok.barangay.barangay_id }}"
+                                                                    {% if bhw.assigned_purok and bhw.assigned_purok.purok_id == purok.purok_id %}
+                                                                        selected
+                                                                    {% endif %}
+                                                                >
+
+                                                                    {{ purok.purok_name }}
+
+                                                                </option>
+
+                                                            {% endfor %}
+
+
+                                                        </select>
+
+
+                                                        <small
+                                                            class="text-muted"
+                                                        >
+
+                                                            Leave this blank if the BHW
+                                                            monitors the whole Barangay.
+
+                                                        </small>
+
+                                                    </div>
+
+
+                                                </div>
+
+
+                                                <!-- FOOTER -->
+
+                                                <div class="modal-footer">
+
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-secondary"
+                                                        data-bs-dismiss="modal"
+                                                    >
+
+                                                        Cancel
+
+                                                    </button>
+
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-success"
+                                                    >
+
+                                                        <i class="fa-solid fa-floppy-disk"></i>
+
+                                                        Save Assignment
+
+                                                    </button>
+
+                                                </div>
+
+
+                                            </form>
+
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="empty-state">
+
+                    <i class="fa-solid fa-user-nurse"></i>
+
+                    <h5>
+                        No Approved BHW Accounts
+                    </h5>
+
+                    <p>
+                        Approve a BHW registration request first
+                        before assigning a monitoring area.
+                    </p>
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- Bootstrap JS -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<!-- =========================================
+     FILTER PUROKS BY BARANGAY
+========================================= -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const barangaySelects =
+            document.querySelectorAll(
+                ".barangay-select"
+            );
+
+
+        barangaySelects.forEach(
+            function (barangaySelect) {
+
+                const userId =
+                    barangaySelect.dataset.user;
+
+                const purokSelect =
+                    document.getElementById(
+                        "purokSelect" + userId
+                    );
+
+
+                if (!purokSelect) {
+                    return;
+                }
+
+
+                function filterPuroks() {
+
+                    const barangayId =
+                        barangaySelect.value;
+
+                    const options =
+                        purokSelect.querySelectorAll(
+                            "option[data-barangay]"
+                        );
+
+
+                    options.forEach(
+                        function (option) {
+
+                            if (
+                                !barangayId ||
+                                option.dataset.barangay
+                                === barangayId
+                            ) {
+
+                                option.hidden = false;
+
+                            }
+
+                            else {
+
+                                option.hidden = true;
+
+                                if (option.selected) {
+                                    option.selected = false;
+                                }
+
+                            }
+
+                        }
+                    );
+
+                }
+
+
+                barangaySelect.addEventListener(
+                    "change",
+                    filterPuroks
+                );
+
+
+                filterPuroks();
+
+            }
+        );
+
+    }
+);
+
+</script>
+
+
+</body>
+</html>

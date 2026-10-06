@@ -1,0 +1,500 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DengueWatch | LGU Profile</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7f9;
+        color: #1f2937;
+      }
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 260px;
+        background: #0f766e;
+        color: #fff;
+        padding: 25px 18px;
+        z-index: 10;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 12px 25px;
+        border-bottom: 1px solid #ffffff40;
+      }
+      .brand i {
+        font-size: 30px;
+      }
+      .brand strong {
+        display: block;
+        font-size: 20px;
+      }
+      .brand small {
+        font-size: 10px;
+        opacity: 0.75;
+      }
+      .nav-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.65;
+        margin: 22px 12px 8px;
+      }
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #fff;
+        text-decoration: none;
+        padding: 11px 12px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+      .sidebar a:hover,
+      .sidebar a.active {
+        background: #ffffff2f;
+      }
+      .sidebar a i {
+        width: 18px;
+        text-align: center;
+      }
+      .main {
+        margin-left: 260px;
+        min-height: 100vh;
+      }
+      .topbar {
+        height: 75px;
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .topbar h5 {
+        margin: 0;
+        font-weight: 700;
+      }
+      .topbar small,
+      .muted {
+        color: #6b7280;
+      }
+      .role {
+        background: #e6f4f1;
+        color: #0f766e;
+        border-radius: 18px;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      .content {
+        padding: 30px 34px;
+      }
+      .heading {
+        margin-bottom: 20px;
+      }
+      .heading h2 {
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0 0 5px;
+      }
+      .profile-layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 18px;
+      }
+      .cardx {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        box-shadow: 0 2px 8px #0f172a0a;
+      }
+      .summary {
+        padding: 28px;
+        text-align: center;
+        height: max-content;
+      }
+      .avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        background: #e6f4f1;
+        color: #0f766e;
+        display: grid;
+        place-items: center;
+        font-size: 38px;
+      }
+      .summary h3 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+      .summary .username {
+        font-size: 12px;
+        color: #6b7280;
+      }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 14px;
+        padding: 6px 10px;
+        border-radius: 20px;
+        background: #dcfce7;
+        color: #166534;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .summary-list {
+        margin-top: 24px;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 18px;
+        text-align: left;
+      }
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 0;
+        font-size: 12px;
+      }
+      .summary-row span {
+        color: #6b7280;
+      }
+      .form-head {
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .form-head h5 {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0;
+      }
+      .form-head p {
+        font-size: 11px;
+        color: #6b7280;
+        margin: 4px 0 0;
+      }
+      .form-body {
+        padding: 22px;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 17px;
+      }
+      .field.full {
+        grid-column: 1/-1;
+      }
+      .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .field input,
+      .field textarea {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        outline: none;
+        background: #fff;
+      }
+      .field input:focus,
+      .field textarea:focus {
+        border-color: #0f766e;
+        box-shadow: 0 0 0 3px #0f766e1f;
+      }
+      .field input[readonly] {
+        background: #f3f4f6;
+        color: #6b7280;
+      }
+      .field textarea {
+        min-height: 105px;
+        resize: vertical;
+      }
+      .help {
+        font-size: 10px;
+        color: #6b7280;
+        margin-top: 5px;
+      }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid #e5e7eb;
+      }
+      .btnx {
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+        padding: 9px 15px;
+        background: #fff;
+        color: #374151;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .btnx.primary {
+        background: #0f766e;
+        border-color: #0f766e;
+        color: #fff;
+      }
+      .alertx {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 12px;
+      }
+      .alertx.success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+      }
+      .alertx.error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+      @media (max-width: 980px) {
+        .profile-layout {
+          grid-template-columns: 1fr;
+        }
+        .summary {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: 0 20px;
+          text-align: left;
+        }
+        .avatar {
+          grid-row: 1/4;
+        }
+        .summary-list {
+          grid-column: 1/-1;
+        }
+      }
+      @media (max-width: 760px) {
+        .sidebar {
+          position: relative;
+          width: 100%;
+          height: auto;
+        }
+        .sidebar nav {
+          display: flex;
+          overflow-x: auto;
+        }
+        .nav-title {
+          display: none;
+        }
+        .sidebar a {
+          white-space: nowrap;
+        }
+        .main {
+          margin-left: 0;
+        }
+        .topbar {
+          padding: 0 15px;
+        }
+        .content {
+          padding: 20px 12px;
+        }
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        .field.full {
+          grid-column: auto;
+        }
+        .profile-layout {
+          grid-template-columns: 1fr;
+        }
+        .summary {
+          display: block;
+          text-align: center;
+        }
+        .summary-list {
+          text-align: left;
+        }
+        .role {
+          display: none;
+        }
+      }
+      @media (max-width: 480px) {
+        .actions {
+          flex-direction: column-reverse;
+        }
+        .btnx {
+          text-align: center;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'includes/role_sidebar.html' %}
+    <div class="main">
+      <header class="topbar">
+        <div>
+          <h5>My Profile</h5>
+          <small>DengueWatch Account Settings</small>
+        </div>
+        <span class="role">{{ current_user_role }}</span>
+      </header>
+      <main class="content">
+        <section class="heading">
+          <h2>LGU Profile</h2>
+          <p class="muted mb-0">
+            View and update your account and contact information.
+          </p>
+        </section>
+        {% for message in messages %}
+        <div
+          class="alertx {% if message.tags == 'success' %}success{% else %}error{% endif %}"
+        >
+          <i
+            class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"
+          ></i
+          ><span>{{ message }}</span>
+        </div>
+        {% endfor %}
+        <div class="profile-layout">
+          <section class="cardx summary">
+            <div class="avatar">
+              <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <div>
+              <h3>{{ user.get_full_name|default:user.username }}</h3>
+              <div class="username">@{{ user.username }}</div>
+              <div class="status">
+                <i class="fa-solid fa-circle-check"></i>{{
+                user.get_account_status_display }}
+              </div>
+            </div>
+            <div class="summary-list">
+              <div class="summary-row">
+                <span>Role</span><strong>{{ user.get_role_display }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Member since</span
+                ><strong>{{ user.date_joined|date:"M d, Y" }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Last login</span
+                ><strong
+                  >{{ user.last_login|date:"M d, Y g:i A"|default:"No record"
+                  }}</strong
+                >
+              </div>
+            </div>
+          </section>
+          <section class="cardx">
+            <div class="form-head">
+              <h5>
+                <i class="fa-solid fa-user-pen me-2"></i>Profile Information
+              </h5>
+              <p>Update the information used for your DengueWatch account.</p>
+            </div>
+            <form class="form-body" method="post">
+              {% csrf_token %}
+              <div class="form-grid">
+                <div class="field">
+                  <label for="username">Username</label
+                  ><input id="username" value="{{ user.username }}" readonly />
+                  <div class="help">The username cannot be changed here.</div>
+                </div>
+                <div class="field">
+                  <label for="role">Account role</label
+                  ><input
+                    id="role"
+                    value="{{ user.get_role_display }}"
+                    readonly
+                  />
+                </div>
+                <div class="field">
+                  <label for="first_name">First name</label
+                  ><input
+                    id="first_name"
+                    name="first_name"
+                    maxlength="150"
+                    value="{{ form_data.first_name }}"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="last_name">Last name</label
+                  ><input
+                    id="last_name"
+                    name="last_name"
+                    maxlength="150"
+                    value="{{ form_data.last_name }}"
+                    required
+                  />
+                </div>
+                <div class="field full">
+                  <label for="email">Email address</label
+                  ><input
+                    id="email"
+                    name="email"
+                    type="email"
+                    maxlength="254"
+                    value="{{ form_data.email }}"
+                    required
+                  />
+                </div>
+                <div class="field full">
+                  <label for="contact_number">Contact number</label
+                  ><input
+                    id="contact_number"
+                    name="contact_number"
+                    maxlength="20"
+                    value="{{ form_data.contact_number }}"
+                    placeholder="Example: 09123456789"
+                  />
+                </div>
+                <div class="field full">
+                  <label for="address">Office address</label
+                  ><textarea
+                    id="address"
+                    name="address"
+                    maxlength="500"
+                    placeholder="Enter the LGU office address"
+                  >
+{{ form_data.address }}</textarea
+                  >
+                </div>
+              </div>
+              <div class="actions">
+                <a class="btnx" href="{% url 'lgu_dashboard' %}">Cancel</a
+                ><button class="btnx primary" type="submit">
+                  <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

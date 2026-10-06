@@ -1,0 +1,1671 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>DengueWatch | CHW Dashboard</title>
+
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    <!-- DengueWatch CSS -->
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
+
+
+    <style>
+
+        /* =====================================
+           GENERAL
+        ===================================== */
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7f9;
+            color: #1f2937;
+        }
+
+        .dashboard-wrapper {
+            min-height: 100vh;
+            display: flex;
+        }
+
+
+        /* =====================================
+           SIDEBAR
+        ===================================== */
+
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+
+            background: #0f766e;
+            color: white;
+
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+
+            padding: 25px 18px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 10px 12px 25px;
+
+            border-bottom:
+                1px solid rgba(255,255,255,0.2);
+
+            margin-bottom: 25px;
+        }
+
+        .sidebar-brand i {
+            font-size: 32px;
+        }
+
+        .sidebar-brand h4 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .sidebar-brand small {
+            font-size: 11px;
+            opacity: 0.75;
+        }
+
+        .nav-title {
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            opacity: 0.65;
+
+            margin: 20px 12px 8px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            color: white;
+            text-decoration: none;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            margin-bottom: 5px;
+
+            font-size: 14px;
+
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background:
+                rgba(255,255,255,0.12);
+        }
+
+        .sidebar a.active {
+            background:
+                rgba(255,255,255,0.20);
+        }
+
+        .sidebar a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-link {
+            margin-top: 25px;
+
+            border-top:
+                1px solid rgba(255,255,255,0.2);
+
+            padding-top: 20px !important;
+        }
+
+
+        /* =====================================
+           MAIN CONTENT
+        ===================================== */
+
+        .main-content {
+            margin-left: 260px;
+
+            width:
+                calc(100% - 260px);
+
+            min-height: 100vh;
+        }
+
+
+        /* =====================================
+           TOPBAR
+        ===================================== */
+
+        .topbar {
+            height: 75px;
+
+            background: white;
+
+            border-bottom:
+                1px solid #e5e7eb;
+
+            padding: 0 35px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+        .topbar h5 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .topbar small {
+            color: #6b7280;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-icon {
+            width: 42px;
+            height: 42px;
+
+            border-radius: 50%;
+
+            background: #e6f4f1;
+
+            color: #0f766e;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+        .role-badge {
+            display: inline-block;
+
+            background: #e6f4f1;
+
+            color: #0f766e;
+
+            padding: 4px 9px;
+
+            border-radius: 20px;
+
+            font-size: 11px;
+
+            font-weight: 600;
+        }
+
+
+        /* =====================================
+           CONTENT
+        ===================================== */
+
+        .content {
+            padding: 35px;
+        }
+
+        .welcome-section {
+            margin-bottom: 25px;
+        }
+
+        .welcome-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+
+            margin-bottom: 5px;
+        }
+
+        .welcome-section p {
+            color: #6b7280;
+            margin: 0;
+        }
+
+
+        /* =====================================
+           NOTICE
+        ===================================== */
+
+        .notice {
+            background: #e6f4f1;
+
+            border-left:
+                4px solid #0f766e;
+
+            padding: 15px 18px;
+
+            border-radius: 8px;
+
+            margin-bottom: 25px;
+        }
+
+        .notice strong {
+            color: #0f766e;
+        }
+
+        .notice p {
+            margin: 4px 0 0;
+
+            font-size: 13px;
+
+            color: #4b5563;
+        }
+
+
+        /* =====================================
+           STAT CARDS
+        ===================================== */
+
+        .stat-card {
+            background: white;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 12px;
+
+            padding: 22px;
+
+            height: 100%;
+
+            transition: 0.2s;
+        }
+
+        .stat-card:hover {
+            transform:
+                translateY(-2px);
+
+            box-shadow:
+                0 5px 15px
+                rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+
+            border-radius: 10px;
+
+            background: #e6f4f1;
+
+            color: #0f766e;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 20px;
+
+            margin-bottom: 15px;
+        }
+
+        .stat-card h3 {
+            font-size: 28px;
+
+            font-weight: 700;
+
+            margin: 0;
+        }
+
+        .stat-card p {
+            color: #6b7280;
+
+            margin: 4px 0 0;
+
+            font-size: 13px;
+        }
+
+
+        /* =====================================
+           SECTION CARD
+        ===================================== */
+
+        .section-card {
+            background: white;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 12px;
+
+            padding: 25px;
+
+            margin-top: 25px;
+        }
+
+        .section-header {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 20px;
+        }
+
+        .section-header h5 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .section-header p {
+            margin: 3px 0 0;
+
+            color: #6b7280;
+
+            font-size: 13px;
+        }
+
+
+        /* =====================================
+           QUICK ACTIONS
+        ===================================== */
+
+        .action-card {
+            display: block;
+
+            height: 100%;
+
+            padding: 20px;
+
+            text-decoration: none;
+
+            color: #1f2937;
+
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 10px;
+
+            transition: 0.2s;
+        }
+
+        .action-card:hover {
+            border-color: #0f766e;
+
+            transform:
+                translateY(-2px);
+
+            color: #0f766e;
+        }
+
+        .action-card i {
+            font-size: 24px;
+
+            color: #0f766e;
+
+            margin-bottom: 12px;
+        }
+
+        .action-card strong {
+            display: block;
+
+            margin-bottom: 5px;
+        }
+
+        .action-card small {
+            color: #6b7280;
+
+            line-height: 1.5;
+        }
+
+
+        /* =====================================
+           MAP PLACEHOLDER
+        ===================================== */
+
+        .map-container {
+            height: 330px;
+
+            background: #eef4f3;
+
+            border:
+                1px solid #dfe7e5;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
+        }
+
+        .map-container i {
+            font-size: 50px;
+
+            color: #0f766e;
+
+            margin-bottom: 15px;
+        }
+
+        .map-container h6 {
+            font-weight: 700;
+
+            margin-bottom: 5px;
+        }
+
+        .map-container p {
+            color: #6b7280;
+
+            font-size: 13px;
+
+            max-width: 450px;
+
+            margin: 0;
+        }
+
+
+        /* =====================================
+           RISK CARDS
+        ===================================== */
+
+        .risk-card {
+            border:
+                1px solid #e5e7eb;
+
+            border-radius: 10px;
+
+            padding: 18px;
+
+            height: 100%;
+
+            background: white;
+        }
+
+        .risk-icon {
+            width: 42px;
+            height: 42px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 12px;
+        }
+
+        .risk-card h6 {
+            font-weight: 700;
+
+            margin-bottom: 5px;
+        }
+
+        .risk-card p {
+            font-size: 13px;
+
+            color: #6b7280;
+
+            margin: 0;
+        }
+
+        .risk-low .risk-icon {
+            background: #e6f4f1;
+            color: #0f766e;
+        }
+
+        .risk-moderate .risk-icon {
+            background: #fff7e6;
+            color: #d97706;
+        }
+
+        .risk-high .risk-icon {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+
+        /* =====================================
+           TABLE
+        ===================================== */
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-size: 13px;
+
+            color: #4b5563;
+
+            font-weight: 600;
+        }
+
+        .table td {
+            font-size: 13px;
+
+            vertical-align: middle;
+        }
+
+        .status-badge {
+            display: inline-block;
+
+            padding: 5px 9px;
+
+            border-radius: 20px;
+
+            font-size: 11px;
+
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff7e6;
+            color: #d97706;
+        }
+
+        .status-validated {
+            background: #e6f4f1;
+            color: #0f766e;
+        }
+
+        .status-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+
+        /* =====================================
+           RESPONSIVE
+        ===================================== */
+
+        @media (max-width: 900px) {
+
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                margin-left: 220px;
+
+                width:
+                    calc(100% - 220px);
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .dashboard-wrapper {
+                display: block;
+            }
+
+            .sidebar {
+                position: relative;
+
+                width: 100%;
+
+                min-height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+
+                width: 100%;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="dashboard-wrapper">
+
+
+    <!-- ==========================================
+         SIDEBAR
+    =========================================== -->
+
+    {% include 'includes/role_sidebar.html' %}
+
+
+    <!-- ==========================================
+         MAIN CONTENT
+    =========================================== -->
+
+    <main class="main-content">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+
+            <div>
+
+                <h5>
+                    CHW Dashboard
+                </h5>
+
+                <small>
+                    City Health Worker Monitoring
+                </small>
+
+            </div>
+
+
+            <div class="user-info">
+
+
+                <div class="text-end">
+
+                    <strong>
+                        {{ current_user_name }}
+                    </strong>
+
+                    <br>
+
+                    <span class="role-badge">
+
+                        {{ current_user_role }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="user-icon">
+
+                    <i class="fa-solid fa-user-doctor"></i>
+
+                </div>
+
+
+            </div>
+
+
+        </header>
+
+
+        <!-- ==========================================
+             CONTENT
+        =========================================== -->
+
+        <div class="content">
+
+
+            <!-- WELCOME -->
+
+            <div class="welcome-section">
+
+                <h2>
+
+                    Welcome,
+                    {{ request.user.first_name|default:request.user.username }}!
+
+                </h2>
+
+
+                <p>
+
+                    Monitor dengue cases, hotspot predictions,
+                    and assigned areas across Iligan City.
+
+                </p>
+
+            </div>
+
+
+            <!-- NOTICE -->
+
+            <div class="notice">
+
+                <strong>
+
+                    <i class="fa-solid fa-user-doctor"></i>
+
+                    CHW Monitoring Access
+
+                </strong>
+
+
+                <p>
+
+                    You can submit and monitor dengue cases,
+                    view AI-assisted hotspot predictions,
+                    access hotspot maps, monitor assigned
+                    areas, and view relevant reports.
+
+                </p>
+
+            </div>
+
+
+            <!-- ==========================================
+                 STATISTICS
+            =========================================== -->
+
+            <div class="row g-4">
+
+
+                <!-- TOTAL CASES -->
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">
+
+                            <i
+                                class="fa-solid fa-file-medical"
+                            ></i>
+
+                        </div>
+
+
+                        <h3>
+                            {{ total_cases|default:"0" }}
+                        </h3>
+
+
+                        <p>
+                            Dengue Cases
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PENDING -->
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">
+
+                            <i
+                                class="fa-solid fa-clock"
+                            ></i>
+
+                        </div>
+
+
+                        <h3>
+                            {{ pending_cases|default:"0" }}
+                        </h3>
+
+
+                        <p>
+                            Cases for Review
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- HOTSPOTS -->
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">
+
+                            <i
+                                class="fa-solid fa-location-dot"
+                            ></i>
+
+                        </div>
+
+
+                        <h3>
+                            {{ hotspot_count|default:"0" }}
+                        </h3>
+
+
+                        <p>
+                            Predicted Hotspots
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- HIGH RISK -->
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">
+
+                            <i
+                                class="fa-solid fa-triangle-exclamation"
+                            ></i>
+
+                        </div>
+
+
+                        <h3>
+                            {{ high_risk_count|default:"0" }}
+                        </h3>
+
+
+                        <p>
+                            High Risk Areas
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==========================================
+                 QUICK ACTIONS
+            =========================================== -->
+
+            <div class="section-card">
+
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h5>
+                            CHW Quick Actions
+                        </h5>
+
+
+                        <p>
+
+                            Access the main functions used
+                            for city health monitoring.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-3">
+
+
+                    <!-- SUBMIT CASE -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <a
+                            href="#"
+                            class="action-card"
+                        >
+
+                            <i
+                                class="fa-solid fa-file-medical"
+                            ></i>
+
+
+                            <strong>
+                                Submit Dengue Case
+                            </strong>
+
+
+                            <small>
+
+                                Submit a new dengue case
+                                report for monitoring.
+
+                            </small>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- CASE RECORDS -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <a
+                            href="#"
+                            class="action-card"
+                        >
+
+                            <i
+                                class="fa-solid fa-clipboard-list"
+                            ></i>
+
+
+                            <strong>
+                                Dengue Case Records
+                            </strong>
+
+
+                            <small>
+
+                                View and monitor dengue
+                                case records available
+                                to the CHW.
+
+                            </small>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- VALIDATE -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <a
+                            href="#"
+                            class="action-card"
+                        >
+
+                            <i
+                                class="fa-solid fa-check-double"
+                            ></i>
+
+
+                            <strong>
+                                Validate Cases
+                            </strong>
+
+
+                            <small>
+
+                                Review and validate
+                                submitted dengue case
+                                information.
+
+                            </small>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- PREDICTIONS -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <a
+                            href="#"
+                            class="action-card"
+                        >
+
+                            <i
+                                class="fa-solid fa-brain"
+                            ></i>
+
+
+                            <strong>
+                                Hotspot Predictions
+                            </strong>
+
+
+                            <small>
+
+                                View AI-assisted dengue
+                                hotspot prediction results.
+
+                            </small>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- MAP -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <a
+                            href="#"
+                            class="action-card"
+                        >
+
+                            <i
+                                class="fa-solid fa-map-location-dot"
+                            ></i>
+
+
+                            <strong>
+                                Hotspot Map
+                            </strong>
+
+
+                            <small>
+
+                                View predicted dengue
+                                hotspot locations on the map.
+
+                            </small>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- REPORTS -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <a
+                            href="#"
+                            class="action-card"
+                        >
+
+                            <i
+                                class="fa-solid fa-chart-column"
+                            ></i>
+
+
+                            <strong>
+                                Reports & Analytics
+                            </strong>
+
+
+                            <small>
+
+                                View relevant reports and
+                                dengue monitoring analytics.
+
+                            </small>
+
+                        </a>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==========================================
+                 HOTSPOT MAP
+            =========================================== -->
+
+            <div class="section-card">
+
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h5>
+                            Dengue Hotspot Map
+                        </h5>
+
+
+                        <p>
+
+                            View predicted dengue hotspot
+                            locations in monitored areas.
+
+                        </p>
+
+                    </div>
+
+
+                    <a
+                        href="#"
+                        class="btn btn-sm btn-outline-success"
+                    >
+
+                        <i class="fa-solid fa-map"></i>
+
+                        Open Map
+
+                    </a>
+
+                </div>
+
+
+                <div class="map-container">
+
+                    <i
+                        class="fa-solid fa-map-location-dot"
+                    ></i>
+
+
+                    <h6>
+                        GIS Hotspot Map
+                    </h6>
+
+
+                    <p>
+
+                        The Google Maps / GIS integration
+                        will display dengue hotspot locations,
+                        barangays, puroks, and their
+                        corresponding risk levels here.
+
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==========================================
+                 RISK LEVELS
+            =========================================== -->
+
+            <div class="section-card">
+
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h5>
+                            Dengue Risk Levels
+                        </h5>
+
+
+                        <p>
+
+                            Current risk classifications
+                            used for monitoring.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-3">
+
+
+                    <!-- LOW -->
+
+                    <div class="col-md-4">
+
+                        <div
+                            class="risk-card risk-low"
+                        >
+
+                            <div class="risk-icon">
+
+                                <i
+                                    class="fa-solid fa-check"
+                                ></i>
+
+                            </div>
+
+
+                            <h6>
+                                Low Risk
+                            </h6>
+
+
+                            <p>
+
+                                Continue regular monitoring
+                                and dengue prevention activities.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MODERATE -->
+
+                    <div class="col-md-4">
+
+                        <div
+                            class="risk-card risk-moderate"
+                        >
+
+                            <div class="risk-icon">
+
+                                <i
+                                    class="fa-solid fa-exclamation"
+                                ></i>
+
+                            </div>
+
+
+                            <h6>
+                                Moderate Risk
+                            </h6>
+
+
+                            <p>
+
+                                Increase monitoring and
+                                closely observe dengue
+                                case trends.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- HIGH -->
+
+                    <div class="col-md-4">
+
+                        <div
+                            class="risk-card risk-high"
+                        >
+
+                            <div class="risk-icon">
+
+                                <i
+                                    class="fa-solid fa-triangle-exclamation"
+                                ></i>
+
+                            </div>
+
+
+                            <h6>
+                                High Risk
+                            </h6>
+
+
+                            <p>
+
+                                Give priority attention to
+                                affected areas and coordinate
+                                appropriate health actions.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==========================================
+                 RECENT CASE REPORTS
+            =========================================== -->
+
+            <div class="section-card">
+
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h5>
+                            Recent Dengue Case Reports
+                        </h5>
+
+
+                        <p>
+
+                            Recently submitted or monitored
+                            dengue case records.
+
+                        </p>
+
+                    </div>
+
+
+                    <a
+                        href="#"
+                        class="btn btn-sm btn-outline-success"
+                    >
+
+                        View All
+
+                    </a>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+
+                    <table class="table table-hover">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Case ID
+                                </th>
+
+                                <th>
+                                    Barangay
+                                </th>
+
+                                <th>
+                                    Purok
+                                </th>
+
+                                <th>
+                                    Date Reported
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            {% if recent_cases %}
+
+                                {% for case in recent_cases %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ case.id }}
+                                    </td>
+
+                                    <td>
+                                        {{ case.barangay }}
+                                    </td>
+
+                                    <td>
+                                        {{ case.purok }}
+                                    </td>
+
+                                    <td>
+                                        {{ case.date_reported }}
+                                    </td>
+
+                                    <td>
+
+                                        <span
+                                            class="status-badge
+                                            {% if case.status == 'Validated' %}
+                                                status-validated
+                                            {% elif case.status == 'High Risk' %}
+                                                status-high
+                                            {% else %}
+                                                status-pending
+                                            {% endif %}"
+                                        >
+
+                                            {{ case.status }}
+
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            {% else %}
+
+                                <tr>
+
+                                    <td
+                                        colspan="5"
+                                        class="text-center text-muted py-4"
+                                    >
+
+                                        No recent dengue case
+                                        reports available.
+
+                                    </td>
+
+                                </tr>
+
+                            {% endif %}
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==========================================
+                 ASSIGNED AREAS
+            =========================================== -->
+
+            <div class="section-card">
+
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h5>
+                            Assigned Monitoring Areas
+                        </h5>
+
+
+                        <p>
+
+                            Barangays and areas assigned
+                            to this CHW account.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+
+                    <table class="table table-hover">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Area
+                                </th>
+
+                                <th>
+                                    Barangay
+                                </th>
+
+                                <th>
+                                    Purok
+                                </th>
+
+                                <th>
+                                    Cases
+                                </th>
+
+                                <th>
+                                    Risk Level
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            {% if assigned_areas %}
+
+                                {% for area in assigned_areas %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ area.name }}
+                                    </td>
+
+                                    <td>
+                                        {{ area.barangay }}
+                                    </td>
+
+                                    <td>
+                                        {{ area.purok }}
+                                    </td>
+
+                                    <td>
+                                        {{ area.cases }}
+                                    </td>
+
+                                    <td>
+
+                                        <span
+                                            class="status-badge
+                                            {% if area.risk_level == 'High' %}
+                                                status-high
+                                            {% elif area.risk_level == 'Moderate' %}
+                                                status-pending
+                                            {% else %}
+                                                status-validated
+                                            {% endif %}"
+                                        >
+
+                                            {{ area.risk_level }}
+
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            {% else %}
+
+                                <tr>
+
+                                    <td
+                                        colspan="5"
+                                        class="text-center text-muted py-4"
+                                    >
+
+                                        No assigned areas available.
+
+                                    </td>
+
+                                </tr>
+
+                            {% endif %}
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+
+</div>
+
+
+<!-- Bootstrap JS -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+
+</body>
+
+</html>

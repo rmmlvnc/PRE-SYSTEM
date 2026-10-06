@@ -1,0 +1,1921 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>DengueWatch | AI Predictions</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7f9;
+            color: #1f2937;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #0f766e;
+            color: white;
+            padding: 28px 14px;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px 25px;
+            border-bottom: 1px solid #ffffff40;
+        }
+
+        .brand i {
+            font-size: 25px;
+        }
+
+        .brand strong {
+            display: block;
+            font-size: 20px;
+        }
+
+        .brand small {
+            display: block;
+            font-size: 9px;
+            opacity: 0.8;
+        }
+
+        .menu-title {
+            margin: 25px 10px 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 11px 10px;
+            margin-bottom: 4px;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #ffffff2e;
+        }
+
+        .sidebar a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 14px;
+            right: 14px;
+            border-top: 1px solid #ffffff40;
+            padding-top: 15px;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main {
+            margin-left: 200px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 75px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 28px;
+        }
+
+        .topbar h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .topbar small,
+        .muted {
+            color: #6b7280;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0f766e;
+            background: #ecfdf5;
+            padding: 7px 11px;
+            border-radius: 20px;
+        }
+
+        .user-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+
+            display: grid;
+            place-items: center;
+
+            background: #0f766e;
+            color: white;
+            overflow: hidden;
+        }
+
+        .user-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content {
+            padding: 28px;
+        }
+
+        /* =========================
+           PAGE TITLE
+        ========================= */
+
+        .page-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+
+            gap: 18px;
+            flex-wrap: wrap;
+
+            margin-bottom: 22px;
+        }
+
+        .page-title h2 {
+            font-size: 25px;
+            font-weight: 700;
+            margin: 0 0 5px;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .model-status {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+
+            padding: 8px 12px;
+
+            border-radius: 20px;
+
+            background: #dcfce7;
+            color: #166534;
+
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .model-status.error-status {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        /* =========================
+           ALERT
+        ========================= */
+
+        .alert-box {
+            display: flex;
+            gap: 12px;
+
+            padding: 15px 17px;
+            margin-bottom: 20px;
+
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #f59e0b;
+
+            border-radius: 9px;
+
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .alert-box.error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            border-left-color: #dc2626;
+        }
+
+        .alert-box.success {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            border-left-color: #16a34a;
+        }
+
+        /* =========================
+           STAT CARDS
+        ========================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(145px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+
+            padding: 17px;
+
+            display: flex;
+            align-items: center;
+            gap: 13px;
+
+            box-shadow: 0 2px 8px #0f172a0a;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+
+            border-radius: 9px;
+
+            display: grid;
+            place-items: center;
+
+            background: #ccfbf1;
+            color: #0f766e;
+        }
+
+        .stat-icon.low {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .stat-icon.moderate {
+            background: #fef9c3;
+            color: #ca8a04;
+        }
+
+        .stat-icon.high {
+            background: #ffedd5;
+            color: #ea580c;
+        }
+
+        .stat-icon.critical {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .stat-card h3 {
+            font-size: 22px;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            font-size: 11px;
+            color: #6b7280;
+            margin: 2px 0 0;
+        }
+
+        /* =========================
+           BOX
+        ========================= */
+
+        .box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+
+            box-shadow: 0 2px 8px #0f172a0a;
+        }
+
+        .box-head {
+            padding: 17px 19px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .box-head h5 {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .box-head p {
+            font-size: 11px;
+            color: #6b7280;
+            margin: 4px 0 0;
+        }
+
+        .box-body {
+            padding: 19px;
+        }
+
+        /* =========================
+           PROFILE
+        ========================= */
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .profile-card {
+            min-width: 0;
+            padding: 14px;
+
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+
+            background: #f8fafc;
+
+            overflow-wrap: anywhere;
+        }
+
+        .profile-card span {
+            display: block;
+            margin-bottom: 4px;
+
+            color: #6b7280;
+            font-size: 10px;
+
+            text-transform: uppercase;
+        }
+
+        .profile-card strong {
+            font-size: 15px;
+        }
+
+        /* =========================
+           TWO COLUMN
+        ========================= */
+
+        .grid-two {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        /* =========================
+           WEATHER
+        ========================= */
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .weather-item {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .weather-item i {
+            color: #0f766e;
+            margin-bottom: 8px;
+        }
+
+        .weather-item span {
+            display: block;
+
+            font-size: 10px;
+            color: #6b7280;
+
+            text-transform: uppercase;
+        }
+
+        .weather-item strong {
+            font-size: 20px;
+        }
+
+        .weather-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 12px;
+            flex-wrap: wrap;
+
+            margin-bottom: 14px;
+        }
+
+        .weather-date-select {
+            min-width: 230px;
+
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+
+            padding: 9px 12px;
+
+            background: white;
+
+            font-size: 13px;
+        }
+
+        .weather-signal {
+            margin-top: 14px;
+
+            padding: 12px 14px;
+
+            border-radius: 8px;
+
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+
+        .weather-signal strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .weather-signal p {
+            margin: 0;
+
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .source {
+            font-size: 11px;
+            color: #6b7280;
+
+            margin: 14px 0 0;
+
+            line-height: 1.5;
+        }
+
+        .source a {
+            color: #0f766e;
+        }
+
+        /* =========================
+           RISK GUIDE
+        ========================= */
+
+        .risk-guide {
+            display: grid;
+            gap: 9px;
+        }
+
+        .risk-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 10px 12px;
+
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+
+            font-size: 12px;
+        }
+
+        .risk-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-weight: 700;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            display: inline-block;
+        }
+
+        .dot.low {
+            background: #22c55e;
+        }
+
+        .dot.moderate {
+            background: #eab308;
+        }
+
+        .dot.high {
+            background: #f97316;
+        }
+
+        .dot.critical {
+            background: #dc2626;
+        }
+
+        /* =========================
+           MODEL METRICS
+        ========================= */
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .metric-item {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .metric-item span {
+            display: block;
+
+            font-size: 10px;
+            color: #6b7280;
+
+            text-transform: uppercase;
+        }
+
+        .metric-item strong {
+            font-size: 20px;
+        }
+
+        /* =========================
+           TABLE
+        ========================= */
+
+        .table-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+
+            box-shadow: 0 2px 8px #0f172a0a;
+        }
+
+        .toolbar {
+            padding: 14px 18px;
+
+            border-bottom: 1px solid #e5e7eb;
+
+            display: flex;
+            justify-content: space-between;
+
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filters {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .filters input,
+        .filters select {
+            border: 1px solid #d1d5db;
+
+            border-radius: 7px;
+
+            padding: 8px 10px;
+
+            font-size: 12px;
+        }
+
+        .table-responsive {
+            max-height: 540px;
+        }
+
+        table {
+            margin: 0 !important;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+
+            background: #f8fafc !important;
+            color: #4b5563 !important;
+
+            font-size: 10px;
+            text-transform: uppercase;
+
+            padding: 12px !important;
+
+            white-space: nowrap;
+        }
+
+        tbody td {
+            font-size: 12px;
+
+            padding: 12px !important;
+
+            vertical-align: middle;
+
+            white-space: nowrap;
+        }
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding: 5px 9px;
+
+            border-radius: 20px;
+
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .badge-low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-moderate {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .badge-high {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .badge-critical {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .trend-up {
+            color: #b91c1c;
+        }
+
+        .trend-down {
+            color: #15803d;
+        }
+
+        .trend-stable {
+            color: #6b7280;
+        }
+
+        .footer-note {
+            font-size: 11px;
+            color: #6b7280;
+
+            margin: 16px 0 0;
+        }
+
+        /* =========================
+           EMPTY STATE
+        ========================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 45px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 38px;
+            margin-bottom: 12px;
+            color: #0f766e;
+        }
+
+        .empty-state h5 {
+            color: #374151;
+            margin-bottom: 5px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 1100px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .profile-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .grid-two {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+
+                width: 100%;
+                height: auto;
+
+                padding: 15px;
+            }
+
+            .brand {
+                padding-bottom: 14px;
+            }
+
+            .menu-title,
+            .logout {
+                display: none;
+            }
+
+            .sidebar nav {
+                display: flex;
+
+                overflow-x: auto;
+
+                gap: 5px;
+
+                margin-top: 12px;
+            }
+
+            .sidebar a {
+                white-space: nowrap;
+                margin: 0;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .content {
+                padding: 18px 12px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .profile-grid,
+            .weather-grid,
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .role-badge {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =========================
+     SIDEBAR
+========================= -->
+
+{% include 'includes/role_sidebar.html' %}
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="main">
+
+    <!-- TOPBAR -->
+
+    <header class="topbar">
+
+        <div>
+            <h4>AI Predictions</h4>
+            <small>DengueWatch Monitoring System</small>
+        </div>
+
+        <div class="user-info">
+
+            <span class="role-badge">
+                {{ user.get_username }}
+            </span>
+
+            <div class="user-icon">
+
+                {% if user.profile_picture %}
+                    <img
+                        src="{{ user.profile_picture.url }}"
+                        alt="Profile"
+                    >
+                {% else %}
+                    <i class="fa-solid fa-user"></i>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- CONTENT -->
+
+    <main class="content">
+
+        <!-- PAGE TITLE -->
+
+        <section class="page-title">
+
+            <div>
+
+                <h2>AI-Assisted Hotspot Prediction</h2>
+
+                <p>
+                    Random Forest forecasts using historical dengue cases
+                    and weather information.
+                </p>
+
+            </div>
+
+
+            {% if model_ready %}
+
+                <div class="model-status">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    Random Forest model loaded
+
+                </div>
+
+            {% elif prediction_error %}
+
+                <div class="model-status error-status">
+
+                    <i class="fa-solid fa-circle-exclamation"></i>
+
+                    Model needs attention
+
+                </div>
+
+            {% else %}
+
+                <div class="model-status">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    Prediction system ready
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- ERROR -->
+
+        {% if prediction_error %}
+
+            <div class="alert-box error">
+
+                <i class="fa-solid fa-circle-exclamation"></i>
+
+                <div>
+
+                    <strong>Prediction unavailable.</strong>
+
+                    <br>
+
+                    {{ prediction_error }}
+
+                    <br><br>
+
+                    <strong>What to do:</strong>
+
+                    Replace the old
+                    <code>random_forest.pkl</code>
+                    with the newly retrained model from Google Colab,
+                    then restart Django.
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="alert-box">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <div>
+
+                    <strong>Experimental decision support.</strong>
+
+                    <br>
+
+                    Review forecasts with an epidemiologist before issuing
+                    alerts or allocating resources.
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =========================
+             STATISTICS
+        ========================= -->
+
+        <section class="stats">
+
+            <article class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-location-dot"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ forecasts|length }}
+                    </h3>
+
+                    <p>Barangays Evaluated</p>
+
+                </div>
+
+            </article>
+
+
+            <article class="stat-card">
+
+                <div class="stat-icon low">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ low_count }}
+                    </h3>
+
+                    <p>Low Risk</p>
+
+                </div>
+
+            </article>
+
+
+            <article class="stat-card">
+
+                <div class="stat-icon moderate">
+
+                    <i class="fa-solid fa-circle-exclamation"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ moderate_count }}
+                    </h3>
+
+                    <p>Moderate Risk</p>
+
+                </div>
+
+            </article>
+
+
+            <article class="stat-card">
+
+                <div class="stat-icon high">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ high_count }}
+                    </h3>
+
+                    <p>High Risk</p>
+
+                </div>
+
+            </article>
+
+
+            <article class="stat-card">
+
+                <div class="stat-icon critical">
+
+                    <i class="fa-solid fa-radiation"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ critical_count }}
+                    </h3>
+
+                    <p>Critical Risk</p>
+
+                </div>
+
+            </article>
+
+
+        </section>
+
+
+        <!-- =========================
+             HISTORICAL PROFILE
+        ========================= -->
+
+        <section class="box mb-3">
+
+            <div class="box-head">
+
+                <h5>
+
+                    <i class="fa-solid fa-people-group me-2 text-success"></i>
+
+                    Historical Case Profile
+
+                </h5>
+
+                <p>
+
+                    Most common values in historical Iligan City dengue
+                    records; these are observations, not predicted personal
+                    risk factors.
+
+                </p>
+
+            </div>
+
+
+            <div class="box-body profile-grid">
+
+                <div class="profile-card">
+
+                    <span>Historical records</span>
+
+                    <strong>
+                        {{ demographic_summary.historical_records|default:"0" }}
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-card">
+
+                    <span>Common blood type</span>
+
+                    <strong>
+                        {{ demographic_summary.common_blood_type|default:"N/A" }}
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-card">
+
+                    <span>Common sex</span>
+
+                    <strong>
+                        {{ demographic_summary.common_sex|default:"N/A" }}
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-card">
+
+                    <span>Common age group</span>
+
+                    <strong>
+                        {{ demographic_summary.common_age_group|default:"N/A" }}
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-card">
+
+                    <span>Common reported area</span>
+
+                    <strong>
+                        {{ demographic_summary.common_purok|default:"N/A" }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             WEATHER + RISK GUIDE
+        ========================= -->
+
+        <section class="grid-two">
+
+            <!-- WEATHER -->
+
+            <article class="box">
+
+                <div class="box-head">
+
+                    <h5>
+
+                        <i class="fa-solid fa-cloud-sun me-2 text-success"></i>
+
+                        Weather and Rainfall Context
+
+                    </h5>
+
+                    <p>
+                        Weather for the selected day is shown separately
+                        from the monthly Random Forest forecast.
+                    </p>
+
+                </div>
+
+
+                <div class="box-body">
+
+                    <form
+                        method="get"
+                        class="weather-controls"
+                    >
+
+                        <div>
+
+                            <label
+                                for="weather_date"
+                                class="source"
+                            >
+                                Weather date
+                            </label>
+
+
+                            <select
+                                id="weather_date"
+                                name="weather_date"
+                                class="weather-date-select"
+                                onchange="this.form.submit()"
+                            >
+
+                                {% for option in weather_date_options %}
+
+                                    <option
+                                        value="{{ option.value }}"
+                                        {% if option.value == weather.selected_date %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ option.label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="source">
+
+                            Selected:
+                            {{ weather.selected_date_label|default:"No date selected" }}
+
+                        </div>
+
+                    </form>
+
+
+                    <div class="weather-grid">
+
+                        <div class="weather-item">
+
+                            <i class="fa-solid fa-cloud-rain"></i>
+
+                            <span>Rainfall</span>
+
+                            <strong>
+                                {{ weather.rainfall_mm|floatformat:1|default:"0.0" }}
+                                mm
+                            </strong>
+
+                        </div>
+
+
+                        <div class="weather-item">
+
+                            <i class="fa-solid fa-cloud-sun"></i>
+
+                            <span>Weather</span>
+
+                            <strong>
+                                {{ weather.weather_description|default:"N/A" }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="weather-item">
+
+                            <i class="fa-solid fa-clock"></i>
+
+                            <span>Rain hours</span>
+
+                            <strong>
+                                {{ weather.precipitation_hours|floatformat:1|default:"0.0" }}
+                                h
+                            </strong>
+
+                        </div>
+
+
+                        <div class="weather-item">
+
+                            <i class="fa-solid fa-temperature-half"></i>
+
+                            <span>Mean temperature</span>
+
+                            <strong>
+                                {{ weather.temperature_c|floatformat:1|default:"0.0" }}°C
+                            </strong>
+
+                        </div>
+
+
+                        <div class="weather-item">
+
+                            <i class="fa-solid fa-droplet"></i>
+
+                            <span>Mean humidity</span>
+
+                            <strong>
+                                {{ weather.humidity_pct|floatformat:1|default:"0.0" }}%
+                            </strong>
+
+                        </div>
+
+
+                        <div class="weather-item">
+
+                            <i class="fa-solid fa-cloud-showers-heavy"></i>
+
+                            <span>Recent 7-day rain</span>
+
+                            <strong>
+                                {{ weather.recent_7_day_rainfall_mm|floatformat:1|default:"0.0" }}
+                                mm
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="weather-signal">
+
+                        <strong>
+
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>
+
+                            {{ weather.weather_signal|default:"Weather monitoring signal" }}
+
+                        </strong>
+
+                        <p>
+
+                            {{ weather.weather_effect|default:"Rainfall is monitored as an environmental signal that may support dengue surveillance." }}
+
+                        </p>
+
+                    </div>
+
+
+                    <p class="source mt-2">
+
+                        Source:
+
+                        {% if weather.source_url %}
+
+                            <a
+                                href="{{ weather.source_url }}"
+                                target="_blank"
+                                rel="noopener"
+                            >
+                                {{ weather.source }}
+                            </a>
+
+                        {% else %}
+
+                            {{ weather.source|default:"Weather data" }}
+
+                        {% endif %}
+
+                        · Retrieved
+                        {{ weather.retrieved_at|default:"N/A" }}.
+
+                        <br>
+
+                        Latest dengue cases:
+                        {{ case_data_period|default:"N/A" }}
+
+                        · Random Forest forecast:
+                        {{ forecast_period|default:"N/A" }}.
+
+                    </p>
+
+
+                    <p class="source">
+
+                        <strong>Interpretation:</strong>
+
+                        Rain today or yesterday is a weather monitoring
+                        signal, not an immediate dengue case prediction.
+                        Dengue transmission can increase during and after
+                        rainy periods, so rainfall can support surveillance
+                        of the following days and weeks.
+
+                    </p>
+
+                </div>
+
+            </article>
+
+
+            <!-- RISK GUIDE -->
+
+            <article class="box">
+
+                <div class="box-head">
+
+                    <h5>
+
+                        <i class="fa-solid fa-layer-group me-2 text-success"></i>
+
+                        Risk Classification Guide
+
+                    </h5>
+
+                    <p>
+                        Same thresholds used by the hotspot map
+                    </p>
+
+                </div>
+
+
+                <div class="box-body risk-guide">
+
+                    <div class="risk-row">
+
+                        <div class="risk-name">
+
+                            <span class="dot low"></span>
+
+                            Low Risk
+
+                        </div>
+
+                        <strong>1–5 Cases</strong>
+
+                    </div>
+
+
+                    <div class="risk-row">
+
+                        <div class="risk-name">
+
+                            <span class="dot moderate"></span>
+
+                            Moderate Risk
+
+                        </div>
+
+                        <strong>6–50 Cases</strong>
+
+                    </div>
+
+
+                    <div class="risk-row">
+
+                        <div class="risk-name">
+
+                            <span class="dot high"></span>
+
+                            High Risk
+
+                        </div>
+
+                        <strong>51–100 Cases</strong>
+
+                    </div>
+
+
+                    <div class="risk-row">
+
+                        <div class="risk-name">
+
+                            <span class="dot critical"></span>
+
+                            Critical Risk
+
+                        </div>
+
+                        <strong>101+ Cases</strong>
+
+                    </div>
+
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- =========================
+             MODEL EVALUATION
+        ========================= -->
+
+        <section class="box mb-3">
+
+            <div class="box-head">
+
+                <h5>
+
+                    <i class="fa-solid fa-chart-column me-2 text-success"></i>
+
+                    Model Evaluation
+
+                </h5>
+
+                <p>
+                    Later-period chronological validation
+                </p>
+
+            </div>
+
+
+            <div class="box-body">
+
+                <div class="metric-grid">
+
+                    <div class="metric-item">
+
+                        <span>Mean Absolute Error</span>
+
+                        <strong>
+                            {{ model_metrics.mae|default:"N/A" }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="metric-item">
+
+                        <span>Root Mean Squared Error</span>
+
+                        <strong>
+                            {{ model_metrics.rmse|default:"N/A" }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="metric-item">
+
+                        <span>R² Score</span>
+
+                        <strong>
+                            {{ model_metrics.r2|default:"N/A" }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <p class="source">
+
+                    Test rows:
+                    {{ model_metrics.test_rows|default:"N/A" }}
+
+                    · Validation starts:
+                    {{ model_metrics.validation_start|default:"N/A" }}
+
+                    · Persistence baseline MAE:
+                    {{ model_metrics.persistence_baseline_mae|default:"N/A" }}
+
+                    <br>
+
+                    Lower MAE is better. Model performance should be
+                    interpreted together with the validation results.
+
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             BARANGAY FORECASTS
+        ========================= -->
+
+        <section class="table-card">
+
+            <div class="toolbar">
+
+                <div>
+
+                    <strong>Barangay Forecasts</strong>
+
+                    <div class="source mt-1">
+
+                        Ranked by predicted cases for
+                        {{ forecast_period|default:"the selected forecast period" }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="filters">
+
+                    <input
+                        id="search"
+                        type="search"
+                        placeholder="Search barangay"
+                    >
+
+
+                    <select id="risk">
+
+                        <option value="all">
+                            All Risk Levels
+                        </option>
+
+                        <option value="low">
+                            Low Risk
+                        </option>
+
+                        <option value="moderate">
+                            Moderate Risk
+                        </option>
+
+                        <option value="high">
+                            High Risk
+                        </option>
+
+                        <option value="critical">
+                            Critical Risk
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table
+                    class="table table-hover"
+                    id="forecastTable"
+                >
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Rank</th>
+                            <th>Barangay</th>
+                            <th>Current Cases</th>
+                            <th>Predicted Cases</th>
+                            <th>Expected Change</th>
+                            <th>Risk Level</th>
+                            <th>Historical Case Profile</th>
+                            <th>Priority Guidance</th>
+                            <th>Rainfall</th>
+                            <th>Temperature</th>
+                            <th>Humidity</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for row in forecasts %}
+
+                        <tr
+                            data-name="{{ row.barangay|lower }}"
+                            data-risk="{{ row.risk_level|lower }}"
+                        >
+
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+                                    {{ row.barangay }}
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+                                {{ row.current_cases|default:"0" }}
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+                                    {{ row.predicted_cases|default:"0" }}
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                <strong class="{{ row.trend_class }}">
+
+                                    {{ row.case_change_display|default:"0" }}
+
+                                    ·
+
+                                    {{ row.trend|default:"Stable" }}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                {% with risk=row.risk_level|default:"Low" %}
+
+                                    <span
+                                        class="risk-badge badge-{{ risk|lower }}"
+                                    >
+
+                                        <span
+                                            class="dot {{ risk|lower }}"
+                                        ></span>
+
+                                        {{ risk }}
+
+                                    </span>
+
+                                {% endwith %}
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+                                    {{ row.common_age_group|default:"N/A" }}
+                                </strong>
+
+                                <br>
+
+                                {{ row.common_sex|default:"N/A" }}
+
+                                ·
+
+                                {{ row.common_blood_type|default:"N/A" }}
+
+                                <br>
+
+                                <span class="muted">Training feature: {{ row.training_blood_type|default:"N/A" }} historical share ({{ row.training_blood_type_share|default:"0" }}%)</span>
+
+                                <br>
+
+                                <span class="muted">
+
+                                    {{ row.common_purok|default:"N/A" }}
+
+                                    ·
+
+                                    {{ row.historical_records|default:"0" }}
+
+                                    records
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                {{ row.recommendation|default:"Continue monitoring." }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ row.rainfall_mm|default:"0" }}
+                                mm
+
+                            </td>
+
+
+                            <td>
+
+                                {{ row.temperature_c|default:"0" }}°C
+
+                            </td>
+
+
+                            <td>
+
+                                {{ row.humidity_pct|default:"0" }}%
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="11">
+
+                                <div class="empty-state">
+
+                                    <i class="fa-solid fa-chart-line"></i>
+
+                                    <h5>
+                                        No forecasts available
+                                    </h5>
+
+                                    <p>
+                                        The AI prediction results could not
+                                        be generated. Check that the
+                                        Random Forest model is available and
+                                        compatible with the current Django
+                                        environment.
+                                    </p>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <p class="footer-note">
+
+            <i class="fa-solid fa-circle-info me-1"></i>
+
+            Predictions assist surveillance and do not replace medical
+            or epidemiological assessment.
+
+        </p>
+
+    </main>
+
+</div>
+
+
+<!-- =========================
+     FILTER SCRIPT
+========================= -->
+
+<script>
+
+    const search = document.getElementById("search");
+    const risk = document.getElementById("risk");
+
+    function filterRows() {
+
+        const term = search.value.trim().toLowerCase();
+        const selected = risk.value;
+
+        document
+            .querySelectorAll("#forecastTable tbody tr[data-name]")
+            .forEach((row) => {
+
+                const matchesName =
+                    row.dataset.name.includes(term);
+
+                const matchesRisk =
+                    selected === "all" ||
+                    row.dataset.risk === selected;
+
+                row.hidden =
+                    !(matchesName && matchesRisk);
+
+            });
+    }
+
+    search.addEventListener(
+        "input",
+        filterRows
+    );
+
+    risk.addEventListener(
+        "change",
+        filterRows
+    );
+
+</script>
+
+</body>
+</html>

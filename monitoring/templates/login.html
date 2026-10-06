@@ -1,0 +1,512 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DengueWatch | Authorized Personnel</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <!-- DengueWatch CSS -->
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
+</head>
+
+
+<body class="login-page">
+
+<div class="login-container">
+
+    <!-- =====================================================
+         LEFT SIDE - DENGUEWATCH INFORMATION
+    ====================================================== -->
+
+    <div class="login-info">
+
+        <!-- Brand -->
+
+        <div class="brand">
+
+            <i class="fa-solid fa-shield-virus"></i>
+
+            <span>DengueWatch</span>
+
+        </div>
+
+
+        <!-- Main Heading -->
+
+        <h1>
+
+            AI-Assisted
+
+            <span>Dengue Surveillance</span>
+
+            and Hotspot Analytics
+
+        </h1>
+
+
+        <!-- Description -->
+
+        <p>
+
+            A centralized platform designed for authorized health
+            personnel and local government units to monitor dengue
+            cases, analyze hotspot risks, and support informed
+            decision-making.
+
+        </p>
+
+
+        <!-- =================================================
+             FEATURES
+        ================================================== -->
+
+        <div class="system-features">
+
+
+            <!-- AI Prediction -->
+
+            <div class="feature">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                <div>
+
+                    <strong>
+                        AI-Assisted Prediction
+                    </strong>
+
+                    <small>
+                        Identify dengue hotspot risks using
+                        predictive analytics.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- Hotspot Mapping -->
+
+            <div class="feature">
+
+                <i class="fa-solid fa-map-location-dot"></i>
+
+                <div>
+
+                    <strong>
+                        Hotspot Mapping
+                    </strong>
+
+                    <small>
+                        Monitor dengue risk levels across
+                        barangays and puroks.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- Dengue Cases -->
+
+            <div class="feature">
+
+                <i class="fa-solid fa-file-medical"></i>
+
+                <div>
+
+                    <strong>
+                        Dengue Case Monitoring
+                    </strong>
+
+                    <small>
+                        Submit, validate, and monitor
+                        dengue case records.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- Reports -->
+
+            <div class="feature">
+
+                <i class="fa-solid fa-chart-pie"></i>
+
+                <div>
+
+                    <strong>
+                        Reports and Analytics
+                    </strong>
+
+                    <small>
+                        Generate information to support
+                        health decisions.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         RIGHT SIDE - LOGIN
+    ====================================================== -->
+
+    <div class="login-card">
+
+
+        <!-- Header -->
+
+        <div class="login-header">
+
+            <div class="login-icon">
+
+                <i class="fa-solid fa-shield-virus"></i>
+
+            </div>
+
+
+            <h2>
+                Welcome Back
+            </h2>
+
+
+            <p>
+                Sign in to the DengueWatch system
+            </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             LOGIN FORM
+        ================================================== -->
+
+        <form method="POST" action="{% url 'login' %}">
+
+            {% csrf_token %}
+
+
+            <!-- Django Messages -->
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert alert-{{ message.tags }}">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+
+
+            <!-- Username -->
+
+            <div class="form-group mb-3">
+
+                <label for="id_username">
+
+                    Username
+
+                </label>
+
+
+                <div class="input-wrapper">
+
+                    <i class="fa-solid fa-user"></i>
+
+
+                    <input
+                        type="text"
+                        name="username"
+                        id="id_username"
+                        class="form-control"
+                        placeholder="Enter your username"
+                        required
+                        autofocus
+                    >
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Password -->
+
+            <div class="form-group mb-3">
+
+                <label for="id_password">
+
+                    Password
+
+                </label>
+
+
+                <div class="input-wrapper">
+
+                    <i class="fa-solid fa-lock"></i>
+
+
+                    <input
+                        type="password"
+                        name="password"
+                        id="id_password"
+                        class="form-control"
+                        placeholder="Enter your password"
+                        required
+                    >
+
+
+                    <!-- Show Password -->
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        onclick="togglePassword()"
+                        aria-label="Show password"
+                    >
+
+                        <i
+                            class="fa-solid fa-eye"
+                            id="passwordIcon"
+                        ></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Login Options -->
+
+            <div class="login-options">
+
+                <div>
+
+                    <input
+                        type="checkbox"
+                        id="remember"
+                        name="remember"
+                    >
+
+                    <label for="remember">
+
+                        Remember me
+
+                    </label>
+
+                </div>
+
+
+                <a
+                    href="#"
+                    class="forgot-password"
+                >
+
+                    Forgot password?
+
+                </a>
+
+            </div>
+
+
+
+            <!-- Login Button -->
+
+            <button
+                type="submit"
+                class="btn-login"
+            >
+
+                <i class="fa-solid fa-right-to-bracket"></i>
+
+                Login
+
+            </button>
+
+        </form>
+
+
+
+        <!-- =================================================
+             AUTHORIZED PERSONNEL
+        ================================================== -->
+
+        <div class="login-divider">
+
+            <span>
+                Authorized Personnel Only
+            </span>
+
+        </div>
+
+
+
+        <div class="user-types">
+
+
+            <!-- CHO -->
+
+            <span>
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                City Health Office (CHO)
+
+            </span>
+
+
+            <!-- CHW -->
+
+            <span>
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                City Health Workers (CHW)
+
+            </span>
+
+
+            <!-- BHW -->
+
+            <span>
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                Barangay Health Workers (BHW)
+
+            </span>
+
+
+            <!-- LGU -->
+
+            <span>
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                Local Government Unit (LGU)
+
+            </span>
+
+        </div>
+
+
+
+        <!-- =================================================
+             FOOTER
+        ================================================== -->
+
+        <div class="login-footer">
+
+            <p>
+
+                This website is for authorized
+                DengueWatch personnel only.
+
+            </p>
+
+
+            <small>
+
+                CHO • CHW • BHW • LGU
+
+            </small>
+
+
+            <br>
+
+
+            <small>
+
+                Residents access DengueWatch
+                through the mobile application.
+
+            </small>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+     PASSWORD SCRIPT
+====================================================== -->
+
+<script>
+
+function togglePassword() {
+
+    const password =
+        document.getElementById("id_password");
+
+    const icon =
+        document.getElementById("passwordIcon");
+
+
+    if (password.type === "password") {
+
+        password.type = "text";
+
+        icon.classList.remove("fa-eye");
+
+        icon.classList.add("fa-eye-slash");
+
+    }
+
+    else {
+
+        password.type = "password";
+
+        icon.classList.remove("fa-eye-slash");
+
+        icon.classList.add("fa-eye");
+
+    }
+
+}
+
+</script>
+
+
+</body>
+</html>

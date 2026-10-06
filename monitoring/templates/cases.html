@@ -1,0 +1,1572 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dengue Cases | DengueWatch</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+
+        body {
+            margin: 0;
+            background: #f4f7f9;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #1f2937;
+        }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
+
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: #0f766e;
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            padding: 25px 18px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 25px;
+        }
+
+        .sidebar-brand i {
+            font-size: 32px;
+        }
+
+        .sidebar-brand h4 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .sidebar-brand small {
+            font-size: 11px;
+            opacity: 0.75;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.65;
+            margin: 20px 12px 8px;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255,255,255,0.12);
+        }
+
+        .sidebar a.active {
+            background: rgba(255,255,255,0.20);
+        }
+
+        .sidebar a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-link {
+            margin-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 20px !important;
+        }
+
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            min-height: 100vh;
+        }
+
+
+
+        .topbar {
+            height: 74px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        .topbar h4 {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .topbar small {
+            color: #6b7280;
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            background: #e6f4f1;
+            color: #0f766e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .user-icon {
+            width: 38px;
+            height: 38px;
+            background: #e6f4f1;
+            color: #0f766e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* =========================
+           PAGE
+        ========================= */
+
+        .page-content {
+            padding: 30px;
+        }
+
+        .page-title {
+            margin-bottom: 25px;
+        }
+
+        .page-title h2 {
+            font-size: 25px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .page-title p {
+            color: #6b7280;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* =========================
+           SUMMARY
+        ========================= */
+
+        .summary-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .summary-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 9px;
+            background: #e6f4f1;
+            color: #0f766e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+        }
+
+        .summary-card h3 {
+            margin: 0;
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .summary-card p {
+            margin: 3px 0 0;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* =========================
+           FILTER
+        ========================= */
+
+        .filter-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+
+        .filter-card h5 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-control,
+        .form-select {
+            height: 42px;
+            font-size: 13px;
+            border-color: #d1d5db;
+        }
+
+        .btn-search {
+            background: #0f766e;
+            color: white;
+            border: none;
+            height: 42px;
+            padding: 0 20px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .btn-search:hover {
+            background: #115e59;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            height: 42px;
+            padding: 0 15px;
+            border-radius: 6px;
+            font-size: 13px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-reset:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        /* =========================
+           TABLE
+        ========================= */
+
+        .case-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            margin-top: 25px;
+            overflow: hidden;
+        }
+
+        .case-card-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .case-card-header h5 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .case-card-header small {
+            color: #6b7280;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            color: #6b7280;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 13px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            font-size: 12px;
+            padding: 14px 13px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .case-id {
+            font-weight: 700;
+            color: #0f766e;
+        }
+
+        /* =========================
+           STATUS
+        ========================= */
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .status-confirmed {
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        .status-rejected {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .btn-view {
+            border: 1px solid #0f766e;
+            color: #0f766e;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+
+        .btn-view:hover {
+            background: #0f766e;
+            color: white;
+        }
+
+        /* =========================
+           MODAL
+        ========================= */
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section h6 {
+            color: #0f766e;
+            font-size: 13px;
+            font-weight: 700;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .detail-label {
+            width: 160px;
+            color: #6b7280;
+        }
+
+        .detail-value {
+            font-weight: 600;
+        }
+
+        /* =========================
+           PAGINATION
+        ========================= */
+
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .pagination-info {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .pagination {
+            margin: 0;
+        }
+
+        .pagination .page-link {
+            color: #0f766e;
+            border-color: #d1d5db;
+            font-size: 12px;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: #0f766e;
+            border-color: #0f766e;
+            color: white;
+        }
+
+        .pagination .page-link:hover {
+            background: #e6f4f1;
+            color: #0f766e;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #9ca3af;
+            background: #f9fafb;
+        }
+
+        /* =========================
+           EMPTY STATE
+        ========================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 55px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h5 {
+            color: #374151;
+            font-size: 16px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 900px) {
+
+            .sidebar {
+                width: 70px;
+            }
+
+            .sidebar-brand span,
+            .sidebar-brand small,
+            .sidebar-section,
+            .sidebar a span {
+                display: none;
+            }
+
+            .sidebar a {
+                justify-content: center;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+
+            .page-content {
+                padding: 20px;
+            }
+
+            .pagination-container {
+                justify-content: center;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+<!-- =========================================================
+     SIDEBAR
+========================================================= -->
+
+{% include 'includes/role_sidebar.html' %}
+
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
+
+<div class="main-content">
+
+
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+
+        <div>
+
+            <h4>Dengue Cases</h4>
+
+            <small>
+                DengueWatch Monitoring System
+            </small>
+
+        </div>
+
+
+        <div class="user-area">
+
+            <span class="role-badge">
+                City Health Office (CHO)
+            </span>
+
+            <div class="user-icon">
+                <i class="fa-solid fa-user"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PAGE CONTENT
+    ===================================================== -->
+
+    <div class="page-content">
+
+
+        <div class="page-title">
+
+            <h2>
+                Dengue Case Monitoring
+            </h2>
+
+            <p>
+                Review, validate, and monitor dengue case records from the dataset.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             SUMMARY
+        ================================================= -->
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+
+                <div class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-file-medical"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            {{ total_cases|default:"0" }}
+                        </h3>
+
+                        <p>
+                            Total Dengue Cases
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-3">
+
+                <div class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-person"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            {{ male_cases|default:"0" }}
+                        </h3>
+
+                        <p>
+                            Male Cases
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-3">
+
+                <div class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-person-dress"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            {{ female_cases|default:"0" }}
+                        </h3>
+
+                        <p>
+                            Female Cases
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-3">
+
+                <div class="summary-card">
+
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-calendar"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            {{ current_year_cases|default:"0" }}
+                        </h3>
+
+                        <p>
+                            Cases This Year
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FILTER
+        ================================================= -->
+
+        <div class="filter-card">
+
+            <h5>
+
+                <i class="fa-solid fa-filter"></i>
+
+                Search and Filter Cases
+
+            </h5>
+
+
+            <form method="GET">
+
+                <div class="row g-3">
+
+
+                    <!-- SEARCH -->
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+                            Search
+                        </label>
+
+                        <input
+                            type="text"
+                            name="search"
+                            class="form-control"
+                            placeholder="Search patient or address..."
+                            value="{{ request.GET.search }}"
+                        >
+
+                    </div>
+
+
+                    <!-- SEX -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+                            Sex
+                        </label>
+
+                        <select name="sex" class="form-select">
+
+                            <option value="">
+                                All
+                            </option>
+
+                            <option
+                                value="Male"
+                                {% if request.GET.sex == "Male" %}selected{% endif %}
+                            >
+                                Male
+                            </option>
+
+                            <option
+                                value="Female"
+                                {% if request.GET.sex == "Female" %}selected{% endif %}
+                            >
+                                Female
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- AGE -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+                            Age
+                        </label>
+
+                        <input
+                            type="number"
+                            name="age"
+                            class="form-control"
+                            placeholder="Age"
+                            value="{{ request.GET.age }}"
+                            min="0"
+                            max="120"
+                        >
+
+                    </div>
+
+
+                    <!-- YEAR -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+                            Year
+                        </label>
+
+                        <select name="year" class="form-select">
+
+                            <option value="">
+                                All Years
+                            </option>
+
+                            {% for year in years %}
+
+                                <option
+                                    value="{{ year }}"
+                                    {% if request.GET.year == year|stringformat:"s" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ year }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BLOOD TYPE -->
+
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+                            Blood Type
+                        </label>
+
+                        <select name="blood_type" class="form-select">
+
+                            <option value="">
+                                All
+                            </option>
+
+                            <option
+                                value="A"
+                                {% if request.GET.blood_type == "A" %}selected{% endif %}
+                            >
+                                A
+                            </option>
+
+                            <option
+                                value="B"
+                                {% if request.GET.blood_type == "B" %}selected{% endif %}
+                            >
+                                B
+                            </option>
+
+                            <option
+                                value="AB"
+                                {% if request.GET.blood_type == "AB" %}selected{% endif %}
+                            >
+                                AB
+                            </option>
+
+                            <option
+                                value="O"
+                                {% if request.GET.blood_type == "O" %}selected{% endif %}
+                            >
+                                O
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BUTTONS -->
+
+                    <div class="col-md-1 d-flex align-items-end gap-1">
+
+                        <button
+                            type="submit"
+                            class="btn-search w-100"
+                            title="Search"
+                        >
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+            </form>
+
+        </div>
+
+
+        <!-- =================================================
+             CASE TABLE
+        ================================================= -->
+
+        <div class="case-card">
+
+
+            <div class="case-card-header">
+
+                <div>
+
+                    <h5>
+                        Reported Dengue Cases
+                    </h5>
+
+                    <small>
+                        Dataset records connected to DengueWatch.
+                    </small>
+
+                </div>
+
+
+                <span class="badge bg-light text-dark">
+
+                    {{ total_cases|default:"0" }} Records
+
+                </span>
+
+            </div>
+
+
+            {% if cases %}
+
+
+            <div class="table-responsive">
+
+                <table class="table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Case ID</th>
+
+                            <th>Sex</th>
+
+                            <th>Age</th>
+
+                            <th>Blood Type</th>
+
+                            <th>(Current Address) City / Municipality</th>
+
+                            <th>(Current Address) Barangay</th>
+
+                            <th>(Current Address) Sitio / Purok / Street Name</th>
+
+                            <th>Year</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                    {% for case in cases %}
+
+
+                        <tr>
+
+
+                            <!-- CASE ID -->
+
+                            <td>
+
+                                <span class="case-id">
+
+                                    DW-{{ case.id|stringformat:"04d" }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- SEX -->
+
+                            <td>
+
+                                {{ case.sex|default:"Not provided" }}
+
+                            </td>
+
+
+                            <!-- AGE -->
+
+                            <td>
+
+                                {{ case.age|default:"Not provided" }}
+
+                            </td>
+
+
+                            <!-- BLOOD TYPE -->
+
+                            <td>
+
+                                {{ case.blood_type|default:"Not provided" }}
+
+                            </td>
+
+
+                            <!-- ADDRESS -->
+
+                            <td>
+
+                                {{ case.address|default:"Not provided" }}
+
+                            </td>
+
+
+                            <!-- BARANGAY -->
+
+                            <td>
+
+                                {{ case.barangay|default:"Not provided" }}
+
+                            </td>
+
+
+                            <!-- PUROK -->
+
+                            <td>
+
+                                {{ case.purok|default:"Not provided" }}
+
+                            </td>
+
+
+                            <!-- YEAR -->
+
+                            <td>
+
+                                {{ case.year|default:"Not provided" }}
+
+                            </td>
+
+
+                            <!-- ACTION -->
+
+                            <td>
+
+                                <button
+                                    class="btn-view"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#caseModal{{ case.id }}"
+                                >
+
+                                    <i class="fa-solid fa-eye"></i>
+
+                                    View
+
+                                </button>
+
+                            </td>
+
+
+                        </tr>
+
+
+                        <!-- =================================================
+                             CASE DETAILS MODAL
+                        ================================================= -->
+
+                        <div
+                            class="modal fade"
+                            id="caseModal{{ case.id }}"
+                            tabindex="-1"
+                            aria-hidden="true"
+                        >
+
+                            <div class="modal-dialog modal-lg">
+
+                                <div class="modal-content">
+
+
+                                    <!-- MODAL HEADER -->
+
+                                    <div class="modal-header">
+
+                                        <div>
+
+                                            <h5 class="modal-title">
+
+                                                Dengue Case Details
+
+                                            </h5>
+
+                                            <small class="text-muted">
+
+                                                Case
+                                                DW-{{ case.id|stringformat:"04d" }}
+
+                                            </small>
+
+                                        </div>
+
+
+                                        <button
+                                            type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="modal"
+                                        ></button>
+
+                                    </div>
+
+
+                                    <!-- MODAL BODY -->
+
+                                    <div class="modal-body">
+
+
+                                        <!-- PATIENT INFORMATION -->
+
+                                        <div class="detail-section">
+
+                                            <h6>
+
+                                                <i class="fa-solid fa-user"></i>
+
+                                                Patient Information
+
+                                            </h6>
+
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Sex
+                                                </div>
+
+                                                <div class="detail-value">
+                                                    {{ case.sex|default:"Not provided" }}
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Age
+                                                </div>
+
+                                                <div class="detail-value">
+                                                    {{ case.age|default:"Not provided" }}
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Blood Type
+                                                </div>
+
+                                                <div class="detail-value">
+                                                    {{ case.blood_type|default:"Not provided" }}
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- ADDRESS INFORMATION -->
+
+                                        <div class="detail-section">
+
+                                            <h6>
+
+                                                <i class="fa-solid fa-location-dot"></i>
+
+                                                Address Information
+
+                                            </h6>
+
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Address
+                                                </div>
+
+                                                <div class="detail-value">
+                                                    {{ case.address|default:"Not provided" }}
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Barangay
+                                                </div>
+
+                                                <div class="detail-value">
+                                                    {{ case.barangay|default:"Not provided" }}
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Purok / Sitio
+                                                </div>
+
+                                                <div class="detail-value">
+                                                    {{ case.purok|default:"Not provided" }}
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- CASE YEAR -->
+
+                                        <div class="detail-section">
+
+                                            <h6>
+
+                                                <i class="fa-solid fa-calendar"></i>
+
+                                                Case Year
+
+                                            </h6>
+
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Year
+                                                </div>
+
+                                                <div class="detail-value">
+                                                    {{ case.year|default:"Not provided" }}
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- ADDITIONAL CASE INFORMATION -->
+
+                                        <div class="detail-section">
+
+                                            <h6>
+
+                                                <i class="fa-solid fa-notes-medical"></i>
+
+                                                Additional Case Information
+
+                                            </h6>
+
+
+                                            <!-- DATE REPORTED -->
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Date Reported
+                                                </div>
+
+                                                <div class="detail-value">
+
+                                                    {% if case.date_reported %}
+
+                                                        {{ case.date_reported }}
+
+                                                    {% else %}
+
+                                                        Not provided
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <!-- STATUS -->
+
+                                            <div class="detail-row">
+
+                                                <div class="detail-label">
+                                                    Status
+                                                </div>
+
+                                                <div class="detail-value">
+
+                                                    {% if case.status %}
+
+                                                        {{ case.status }}
+
+                                                    {% else %}
+
+                                                        Dataset Record
+
+                                                    {% endif %}
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                    </div>
+
+
+                                    <!-- MODAL FOOTER -->
+
+                                    <div class="modal-footer">
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-secondary"
+                                            data-bs-dismiss="modal"
+                                        >
+
+                                            Close
+
+                                        </button>
+
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- =================================================
+                 PAGINATION
+            ================================================= -->
+
+            <div class="pagination-container">
+
+
+                <div class="pagination-info">
+
+                    Showing
+
+                    <strong>
+                        {{ cases.start_index }}
+                    </strong>
+
+                    to
+
+                    <strong>
+                        {{ cases.end_index }}
+                    </strong>
+
+                    of
+
+                    <strong>
+                        {{ cases.paginator.count }}
+                    </strong>
+
+                    cases
+
+                </div>
+
+
+                {% if cases.paginator.num_pages > 1 %}
+
+                <nav aria-label="Dengue case pagination">
+
+                    <ul class="pagination pagination-sm">
+
+
+                        <!-- PREVIOUS -->
+
+                        {% if cases.has_previous %}
+
+                            <li class="page-item">
+
+                                <a
+                                    class="page-link"
+                                    href="?page={{ cases.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search|urlencode }}{% endif %}{% if request.GET.sex %}&sex={{ request.GET.sex|urlencode }}{% endif %}{% if request.GET.age %}&age={{ request.GET.age|urlencode }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year|urlencode }}{% endif %}{% if request.GET.blood_type %}&blood_type={{ request.GET.blood_type|urlencode }}{% endif %}"
+                                >
+
+                                    <i class="fa-solid fa-chevron-left"></i>
+
+                                </a>
+
+                            </li>
+
+                        {% else %}
+
+                            <li class="page-item disabled">
+
+                                <span class="page-link">
+
+                                    <i class="fa-solid fa-chevron-left"></i>
+
+                                </span>
+
+                            </li>
+
+                        {% endif %}
+
+
+                        <!-- PAGE NUMBERS -->
+
+                        {% for num in cases.paginator.page_range %}
+
+                            {% if num == cases.number %}
+
+                                <li class="page-item active">
+
+                                    <span class="page-link">
+
+                                        {{ num }}
+
+                                    </span>
+
+                                </li>
+
+
+                            {% elif num > cases.number|add:'-2' and num < cases.number|add:'2' %}
+
+                                <li class="page-item">
+
+                                    <a
+                                        class="page-link"
+                                        href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search|urlencode }}{% endif %}{% if request.GET.sex %}&sex={{ request.GET.sex|urlencode }}{% endif %}{% if request.GET.age %}&age={{ request.GET.age|urlencode }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year|urlencode }}{% endif %}{% if request.GET.blood_type %}&blood_type={{ request.GET.blood_type|urlencode }}{% endif %}"
+                                    >
+
+                                        {{ num }}
+
+                                    </a>
+
+                                </li>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        <!-- NEXT -->
+
+                        {% if cases.has_next %}
+
+                            <li class="page-item">
+
+                                <a
+                                    class="page-link"
+                                    href="?page={{ cases.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search|urlencode }}{% endif %}{% if request.GET.sex %}&sex={{ request.GET.sex|urlencode }}{% endif %}{% if request.GET.age %}&age={{ request.GET.age|urlencode }}{% endif %}{% if request.GET.year %}&year={{ request.GET.year|urlencode }}{% endif %}{% if request.GET.blood_type %}&blood_type={{ request.GET.blood_type|urlencode }}{% endif %}"
+                                >
+
+                                    <i class="fa-solid fa-chevron-right"></i>
+
+                                </a>
+
+                            </li>
+
+                        {% else %}
+
+                            <li class="page-item disabled">
+
+                                <span class="page-link">
+
+                                    <i class="fa-solid fa-chevron-right"></i>
+
+                                </span>
+
+                            </li>
+
+                        {% endif %}
+
+
+                    </ul>
+
+                </nav>
+
+                {% endif %}
+
+
+            </div>
+
+
+            {% else %}
+
+
+                <!-- EMPTY STATE -->
+
+                <div class="empty-state">
+
+                    <i class="fa-solid fa-file-circle-xmark"></i>
+
+                    <h5>
+                        No Dengue Cases Found
+                    </h5>
+
+                    <p>
+                        There are currently no dengue case records
+                        matching your search or filters.
+                    </p>
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BOOTSTRAP
+========================================================= -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+</body>
+
+</html>

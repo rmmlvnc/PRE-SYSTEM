@@ -1,0 +1,548 @@
+{% load static %} <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DengueWatch | Reports &amp; Analytics</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f7f9;
+        color: #1f2937;
+      }
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 260px;
+        background: #0f766e;
+        color: #fff;
+        padding: 25px 18px;
+        z-index: 10;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 12px 25px;
+        border-bottom: 1px solid #ffffff40;
+      }
+      .brand i {
+        font-size: 30px;
+      }
+      .brand strong {
+        display: block;
+        font-size: 20px;
+      }
+      .brand small {
+        font-size: 10px;
+        opacity: 0.75;
+      }
+      .nav-title {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.65;
+        margin: 22px 12px 8px;
+      }
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #fff;
+        text-decoration: none;
+        padding: 11px 12px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+      .sidebar a:hover,
+      .sidebar a.active {
+        background: #ffffff2f;
+      }
+      .sidebar a i {
+        width: 18px;
+        text-align: center;
+      }
+      .main {
+        margin-left: 260px;
+        min-height: 100vh;
+      }
+      .topbar {
+        height: 75px;
+        background: #fff;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .topbar h5 {
+        margin: 0;
+        font-weight: 700;
+      }
+      .topbar small,
+      .muted {
+        color: #6b7280;
+      }
+      .role {
+        background: #e6f4f1;
+        color: #0f766e;
+        border-radius: 18px;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      .content {
+        padding: 30px 34px;
+      }
+      .heading {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        align-items: end;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .heading h2 {
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0 0 5px;
+      }
+      .filter {
+        display: flex;
+        gap: 8px;
+      }
+      .filter select,
+      .filter button {
+        height: 38px;
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+        padding: 0 12px;
+        background: #fff;
+        font-size: 12px;
+      }
+      .filter button {
+        background: #0f766e;
+        color: #fff;
+        border-color: #0f766e;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      .cardx,
+      .panel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        box-shadow: 0 2px 8px #0f172a0a;
+      }
+      .cardx {
+        padding: 18px;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #e6f4f1;
+        color: #0f766e;
+        display: grid;
+        place-items: center;
+      }
+      .cardx h3 {
+        font-size: 23px;
+        margin: 0;
+      }
+      .cardx p {
+        font-size: 11px;
+        color: #6b7280;
+        margin: 2px 0 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+      .panel-head {
+        padding: 17px 19px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .panel-head h5 {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0;
+      }
+      .panel-head p {
+        font-size: 11px;
+        color: #6b7280;
+        margin: 4px 0 0;
+      }
+      .panel-body {
+        padding: 18px;
+      }
+      .chart-wrap {
+        height: 285px;
+      }
+      .table-responsive {
+        max-height: 430px;
+      }
+      table {
+        margin: 0 !important;
+      }
+      th {
+        background: #f8fafc !important;
+        color: #4b5563 !important;
+        font-size: 10px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      td {
+        font-size: 12px;
+        vertical-align: middle;
+      }
+      .badge-risk {
+        padding: 5px 9px;
+        border-radius: 16px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .Low {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .Moderate {
+        background: #fef9c3;
+        color: #854d0e;
+      }
+      .High {
+        background: #ffedd5;
+        color: #c2410c;
+      }
+      .Critical {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .guide {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .guide div {
+        border: 1px solid #e5e7eb;
+        border-top: 4px solid;
+        padding: 13px;
+        border-radius: 8px;
+        font-size: 11px;
+      }
+      .guide strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+      .footer-note {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 16px;
+      }
+      @media (max-width: 1000px) {
+        .stats,
+        .guide {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 760px) {
+        .sidebar {
+          position: relative;
+          width: 100%;
+          height: auto;
+        }
+        .sidebar nav {
+          display: flex;
+          overflow: auto;
+        }
+        .nav-title {
+          display: none;
+        }
+        .sidebar a {
+          white-space: nowrap;
+        }
+        .main {
+          margin-left: 0;
+        }
+        .content {
+          padding: 20px 12px;
+        }
+        .topbar {
+          padding: 0 15px;
+        }
+        .stats {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media print {
+        .sidebar,
+        .topbar,
+        .filter {
+          display: none;
+        }
+        .main {
+          margin: 0;
+        }
+        .content {
+          padding: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'includes/role_sidebar.html' %}
+    <div class="main">
+      <header class="topbar">
+        <div>
+          <h5>Reports &amp; Analytics</h5>
+          <small>DengueWatch City-wide Monitoring</small>
+        </div>
+        <span class="role">Local Government Unit (LGU)</span>
+      </header>
+      <main class="content">
+        <section class="heading">
+          <div>
+            <h2>Dengue Reports &amp; Analytics</h2>
+            <p class="muted mb-0">
+              Review case trends, demographics, and high-risk barangays for
+              planning.
+            </p>
+          </div>
+          <form class="filter" method="get">
+            <select name="year">
+              <option value="all">All Years</option>
+              {% for year in years %}
+              <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>
+                {{ year }}
+              </option>
+              {% endfor %}</select
+            ><button type="submit">
+              <i class="fa-solid fa-filter me-1"></i>Apply</button
+            ><button type="button" onclick="window.print()">
+              <i class="fa-solid fa-print me-1"></i>Print
+            </button>
+          </form>
+        </section>
+        <section class="stats">
+          <article class="cardx">
+            <div class="icon"><i class="fa-solid fa-notes-medical"></i></div>
+            <div>
+              <h3>{{ total_cases }}</h3>
+              <p>CASES IN SELECTION</p>
+            </div>
+          </article>
+          <article class="cardx">
+            <div class="icon"><i class="fa-solid fa-map-location-dot"></i></div>
+            <div>
+              <h3>{{ monitored_barangays }}</h3>
+              <p>BARANGAYS MONITORED</p>
+            </div>
+          </article>
+          <article class="cardx">
+            <div class="icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <h3>{{ high_risk_areas }}</h3>
+              <p>HIGH / CRITICAL AREAS</p>
+            </div>
+          </article>
+          <article class="cardx">
+            <div class="icon"><i class="fa-solid fa-database"></i></div>
+            <div>
+              <h3>{{ dataset_count }}</h3>
+              <p>SOURCE DATASETS</p>
+            </div>
+          </article>
+        </section>
+        <section class="grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h5>Cases by Year</h5>
+              <p>Historical dengue case volume</p>
+            </div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="yearChart"></canvas></div>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h5>Cases by Sex</h5>
+              <p>Patient distribution in the selected records</p>
+            </div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="sexChart"></canvas></div>
+            </div>
+          </article>
+        </section>
+        <section class="grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h5>Age Group Distribution</h5>
+              <p>Reported cases grouped by age</p>
+            </div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="ageChart"></canvas></div>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h5>Blood Type Distribution</h5>
+              <p>Values recorded in source datasets</p>
+            </div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="bloodChart"></canvas></div>
+            </div>
+          </article>
+        </section>
+        <section class="panel mb-3">
+          <div class="panel-head">
+            <h5>Barangay Risk Ranking</h5>
+            <p>Case-volume risk thresholds match the DengueWatch hotspot map</p>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Barangay</th>
+                  <th>Cases</th>
+                  <th>Risk Level</th>
+                  <th>Top Purok / Area</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in hotspot_data %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td><strong>{{ row.barangay }}</strong></td>
+                  <td>{{ row.case_count }}</td>
+                  <td>
+                    <span class="badge-risk {{ row.risk_level }}"
+                      >{{ row.risk_level }}</span
+                    >
+                  </td>
+                  <td>
+                    {% for purok in row.puroks|slice:":1" %}{{ purok.name }} ({{ purok.case_count }}){% empty %}Not specified{% endfor %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4">
+                    No records match this filter.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><h5>Risk Classification Guide</h5></div>
+          <div class="panel-body guide">
+            <div style="border-top-color: #22c55e">
+              <strong>Low Risk · 1–5</strong>Routine monitoring and prevention.
+            </div>
+            <div style="border-top-color: #eab308">
+              <strong>Moderate · 6–50</strong>Strengthen monitoring and
+              awareness.
+            </div>
+            <div style="border-top-color: #f97316">
+              <strong>High Risk · 51–100</strong>Prioritize coordination and
+              resources.
+            </div>
+            <div style="border-top-color: #dc2626">
+              <strong>Critical · 101+</strong>Immediate CHO coordination and
+              planning.
+            </div>
+          </div>
+        </section>
+        <p class="footer-note">
+          Analytics are decision-support information and do not replace medical
+          or epidemiological assessment.
+        </p>
+      </main>
+    </div>
+    {{ yearly_summary|json_script:"year-data" }}
+    {{ sex_summary|json_script:"sex-data" }}
+    {{ age_group_summary|json_script:"age-data" }}
+    {{ blood_type_summary|json_script:"blood-data" }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+      const read = (id) => {
+        const element = document.getElementById(id);
+        return element ? JSON.parse(element.textContent) : [];
+      };
+
+      const make = (id, data, type = "bar") => {
+        const canvas = document.getElementById(id);
+        if (!canvas || !Array.isArray(data)) return;
+
+        new Chart(canvas, {
+            type,
+            data: {
+              labels: data.map((x) => x[0]),
+              datasets: [
+                {
+                  data: data.map((x) => x[1]),
+                  label: "Cases",
+                  backgroundColor:
+                    type === "doughnut"
+                      ? [
+                          "#0f766e",
+                          "#14b8a6",
+                          "#5eead4",
+                          "#99f6e4",
+                          "#134e4a",
+                          "#f59e0b",
+                        ]
+                      : "#0f766e",
+                  borderRadius: 5,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: type === "doughnut" } },
+              scales:
+                type === "doughnut"
+                  ? {}
+                  : {
+                      y: { beginAtZero: true, ticks: { precision: 0 } },
+                      x: { grid: { display: false } },
+                    },
+            },
+          });
+      };
+      make("yearChart", read("year-data"));
+      make("sexChart", read("sex-data"), "doughnut");
+      make("ageChart", read("age-data"));
+      make("bloodChart", read("blood-data"), "doughnut");
+    </script>
+  </body>
+</html>

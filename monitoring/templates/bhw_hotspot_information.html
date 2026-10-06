@@ -1,0 +1,1422 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Hotspot Information | DengueWatch
+    </title>
+
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7f9;
+            color: #1f2937;
+        }
+
+
+        /* =================================================
+           SIDEBAR
+        ================================================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #0f766e;
+            color: white;
+            padding: 28px 14px;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px 25px;
+            border-bottom:
+                1px solid rgba(255,255,255,0.25);
+        }
+
+        .brand i {
+            font-size: 25px;
+        }
+
+        .brand-text strong {
+            display: block;
+            font-size: 20px;
+        }
+
+        .brand-text small {
+            font-size: 9px;
+            opacity: 0.8;
+        }
+
+        .menu-title {
+            margin: 25px 10px 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 11px 10px;
+            margin-bottom: 4px;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background:
+                rgba(255,255,255,0.18);
+        }
+
+        .sidebar a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 14px;
+            right: 14px;
+            border-top:
+                1px solid rgba(255,255,255,0.25);
+            padding-top: 15px;
+        }
+
+
+        /* =================================================
+           MAIN
+        ================================================= */
+
+        .main {
+            margin-left: 200px;
+            min-height: 100vh;
+        }
+
+
+        /* =================================================
+           TOPBAR
+        ================================================= */
+
+        .topbar {
+            height: 75px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        .topbar h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .topbar small {
+            color: #6b7280;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            background: #e6f4f1;
+            color: #0f766e;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .user-icon {
+            width: 35px;
+            height: 35px;
+            background: #e6f4f1;
+            color: #0f766e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        /* =================================================
+           CONTENT
+        ================================================= */
+
+        .content {
+            padding: 28px;
+        }
+
+        .page-title {
+            margin-bottom: 22px;
+        }
+
+        .page-title h2 {
+            margin: 0 0 5px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .page-title strong {
+            color: #0f766e;
+        }
+
+
+        /* =================================================
+           NOTICE
+        ================================================= */
+
+        .notice {
+            padding: 15px 18px;
+            border-radius: 8px;
+            margin-bottom: 22px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .notice-info {
+            background: #e6f4f1;
+            border-left: 4px solid #0f766e;
+        }
+
+        .notice-info strong {
+            color: #0f766e;
+        }
+
+        .notice-warning {
+            background: #fff7ed;
+            border-left: 4px solid #f97316;
+            color: #7c2d12;
+        }
+
+        .notice-warning strong {
+            color: #c2410c;
+        }
+
+
+        /* =================================================
+           STATS
+        ================================================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            flex-shrink: 0;
+            border-radius: 9px;
+            background: #e6f4f1;
+            color: #0f766e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+        }
+
+        .stat-icon.cases {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .stat-icon.low {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .stat-icon.moderate {
+            background: #fef9c3;
+            color: #a16207;
+        }
+
+        .stat-icon.high {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            margin: 2px 0 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+
+        /* =================================================
+           CARD
+        ================================================= */
+
+        .card-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-title i {
+            color: #0f766e;
+        }
+
+        .card-subtitle {
+            color: #6b7280;
+            font-size: 12px;
+            margin: 0;
+        }
+
+
+        /* =================================================
+           ASSIGNED HOTSPOT
+        ================================================= */
+
+        .hotspot-summary {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 9px;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hotspot-summary.low {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .hotspot-summary.moderate {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .hotspot-summary.high {
+            background: #fff7ed;
+            border-color: #fdba74;
+        }
+
+        .hotspot-name {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .hotspot-details {
+            font-size: 13px;
+            color: #374151;
+        }
+
+
+        /* =================================================
+           RISK BADGES
+        ================================================= */
+
+        .risk-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .risk-low {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .risk-moderate {
+            background: #fef9c3;
+            color: #a16207;
+        }
+
+        .risk-high {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+
+        /* =================================================
+           FILTER
+        ================================================= */
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-control,
+        .form-select {
+            height: 42px;
+            font-size: 13px;
+            border-color: #d1d5db;
+        }
+
+        .btn-search {
+            height: 42px;
+            padding: 0 18px;
+            border: none;
+            border-radius: 6px;
+            background: #0f766e;
+            color: white;
+            font-size: 13px;
+        }
+
+        .btn-search:hover {
+            background: #115e59;
+        }
+
+        .btn-reset {
+            height: 42px;
+            padding: 0 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #f3f4f6;
+            color: #374151;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+
+        /* =================================================
+           LOCATION LIST
+        ================================================= */
+
+        .location-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .location-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            background: white;
+        }
+
+        .location-item:hover {
+            background: #f9fafb;
+        }
+
+        .location-left {
+            min-width: 0;
+        }
+
+        .location-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .location-risk {
+            font-size: 10px;
+        }
+
+        .location-count {
+            white-space: nowrap;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .location-count strong {
+            color: #374151;
+            font-size: 13px;
+        }
+
+
+        /* =================================================
+           LEGEND
+        ================================================= */
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+            gap: 15px;
+            margin-top: 18px;
+        }
+
+        .legend-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .legend-card h6 {
+            margin: 0 0 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .legend-card p {
+            margin: 0;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+
+        /* =================================================
+           EMPTY
+        ================================================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 55px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h5 {
+            color: #374151;
+            font-size: 16px;
+        }
+
+
+        /* =================================================
+           RESPONSIVE
+        ================================================= */
+
+        @media (max-width: 1100px) {
+
+            .stats {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 70px;
+                padding: 20px 8px;
+            }
+
+            .brand-text,
+            .menu-title,
+            .sidebar a span {
+                display: none;
+            }
+
+            .brand {
+                justify-content: center;
+            }
+
+            .sidebar a {
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 70px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .stats,
+            .location-grid,
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hotspot-summary {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     BHW SIDEBAR
+===================================================== -->
+
+{% include 'includes/role_sidebar.html' %}
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<div class="main">
+
+
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+
+
+        <div>
+
+            <h4>
+                Hotspot Information
+            </h4>
+
+            <small>
+                Barangay Health Worker Monitoring
+            </small>
+
+        </div>
+
+
+        <div class="user-info">
+
+            <span class="role-badge">
+
+                {{ current_user_name }} · {{ current_user_role }}
+
+            </span>
+
+
+            <div class="user-icon">
+
+                <i class="fa-solid fa-user-nurse"></i>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- CONTENT -->
+
+    <div class="content">
+
+
+        <!-- PAGE TITLE -->
+
+        <div class="page-title">
+
+            <h2>
+                Dengue Hotspot Information
+            </h2>
+
+
+            {% if request.user.assigned_barangay %}
+
+                <p>
+
+                    Review dengue hotspot information for
+
+                    <strong>
+                        Barangay
+                        {{ request.user.assigned_barangay.barangay_name }}
+                    </strong>
+
+
+                    {% if request.user.assigned_purok %}
+
+                        -
+                        {{ request.user.assigned_purok.purok_name }}
+
+                    {% endif %}.
+
+                </p>
+
+            {% else %}
+
+                <p>
+                    Your account currently has no assigned monitoring area.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- NO ASSIGNMENT -->
+
+        {% if not request.user.assigned_barangay %}
+
+
+            <div class="notice notice-warning">
+
+                <strong>
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    No Assigned Barangay
+
+                </strong>
+
+                <br>
+
+                Your BHW account does not currently have an assigned
+                Barangay.
+
+                The City Health Office must assign your monitoring
+                area before hotspot information can be displayed.
+
+            </div>
+
+
+        {% else %}
+
+
+            <!-- BHW ACCESS -->
+
+            <div class="notice notice-info">
+
+                <strong>
+
+                    <i class="fa-solid fa-map-location-dot"></i>
+
+                    Assigned Area Hotspot Access
+
+                </strong>
+
+                <br>
+
+                Hotspot information on this page is limited to
+
+                <strong>
+                    Barangay
+                    {{ request.user.assigned_barangay.barangay_name }}
+                </strong>
+
+                {% if request.user.assigned_purok %}
+
+                    -
+                    <strong>
+                        {{ request.user.assigned_purok.purok_name }}
+                    </strong>
+
+                {% endif %}.
+
+                This page does not provide city-wide hotspot
+                administration access.
+
+            </div>
+
+
+            <!-- SUMMARY CARDS -->
+
+            <div class="stats">
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon cases">
+
+                        <i class="fa-solid fa-virus"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            {{ total_cases|default:"0" }}
+                        </h3>
+
+                        <p>
+                            Recorded Dengue Cases
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    {% if risk_level == "High" %}
+
+                        <div class="stat-icon high">
+
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+
+                        </div>
+
+                    {% elif risk_level == "Moderate" %}
+
+                        <div class="stat-icon moderate">
+
+                            <i class="fa-solid fa-circle-exclamation"></i>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="stat-icon low">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <div>
+
+                        <h3>
+                            {{ risk_level }}
+                        </h3>
+
+                        <p>
+                            Barangay Risk Level
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+
+                        <i class="fa-solid fa-location-dot"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            {{ location_count|default:"0" }}
+                        </h3>
+
+                        <p>
+                            Recorded Locations
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon high">
+
+                        <i class="fa-solid fa-fire"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            {{ high_locations|default:"0" }}
+                        </h3>
+
+                        <p>
+                            High Risk Locations
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ASSIGNED HOTSPOT -->
+
+            <div class="card-box">
+
+
+                <div class="card-title">
+
+                    <i class="fa-solid fa-map-location-dot"></i>
+
+                    Assigned Barangay Hotspot Information
+
+                </div>
+
+
+                <p class="card-subtitle">
+
+                    This summary uses recorded dengue case volume
+                    within the Barangay assigned to your BHW account.
+
+                </p>
+
+
+                {% if risk_level == "High" %}
+
+                    <div class="hotspot-summary high">
+
+                {% elif risk_level == "Moderate" %}
+
+                    <div class="hotspot-summary moderate">
+
+                {% else %}
+
+                    <div class="hotspot-summary low">
+
+                {% endif %}
+
+
+                    <div>
+
+                        <div class="hotspot-name">
+
+                            {{ request.user.assigned_barangay.barangay_name }}
+
+                        </div>
+
+
+                        <div class="hotspot-details">
+
+                            Recorded Cases:
+
+                            <strong>
+                                {{ total_cases }}
+                            </strong>
+
+                            &nbsp; | &nbsp;
+
+                            Risk Level:
+
+                            <strong>
+                                {{ risk_level }}
+                            </strong>
+
+
+                            {% if request.user.assigned_purok %}
+
+                                &nbsp; | &nbsp;
+
+                                Assigned Area:
+
+                                <strong>
+                                    {{ request.user.assigned_purok.purok_name }}
+                                </strong>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+
+                        {% if risk_level == "High" %}
+
+                            <span class="risk-badge risk-high">
+
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                                High Risk
+
+                            </span>
+
+                        {% elif risk_level == "Moderate" %}
+
+                            <span class="risk-badge risk-moderate">
+
+                                <i class="fa-solid fa-circle-exclamation"></i>
+
+                                Moderate Risk
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="risk-badge risk-low">
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                                Low Risk
+
+                            </span>
+
+                        {% endif %}
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- FILTER -->
+
+            <div class="card-box">
+
+
+                <div class="card-title">
+
+                    <i class="fa-solid fa-filter"></i>
+
+                    Search Monitoring Locations
+
+                </div>
+
+
+                <p class="card-subtitle">
+
+                    Search recorded Purok, Sitio or Street
+                    locations inside your assigned area.
+
+                </p>
+
+
+                <br>
+
+
+                <form method="GET">
+
+
+                    <div class="row g-3">
+
+
+                        <div class="col-lg-6 col-md-6">
+
+                            <label class="form-label">
+                                Search Location
+                            </label>
+
+                            <input
+                                type="text"
+                                name="search"
+                                value="{{ search }}"
+                                class="form-control"
+                                placeholder="Search Purok, Sitio or Street..."
+                            >
+
+                        </div>
+
+
+                        <div class="col-lg-3 col-md-3">
+
+                            <label class="form-label">
+                                Risk Level
+                            </label>
+
+                            <select
+                                name="risk"
+                                class="form-select"
+                            >
+
+                                <option value="">
+                                    All
+                                </option>
+
+                                <option
+                                    value="Low"
+                                    {% if selected_risk == "Low" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Low
+                                </option>
+
+                                <option
+                                    value="Moderate"
+                                    {% if selected_risk == "Moderate" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Moderate
+                                </option>
+
+                                <option
+                                    value="High"
+                                    {% if selected_risk == "High" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    High
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div
+                            class="
+                                col-lg-3
+                                col-md-3
+                                d-flex
+                                align-items-end
+                                gap-2
+                            "
+                        >
+
+                            <button
+                                type="submit"
+                                class="btn-search"
+                            >
+
+                                <i class="fa-solid fa-magnifying-glass"></i>
+
+                                Search
+
+                            </button>
+
+
+                            <a
+                                href="{% url 'bhw_hotspot_information' %}"
+                                class="btn-reset"
+                            >
+
+                                <i class="fa-solid fa-rotate-left"></i>
+
+                            </a>
+
+                        </div>
+
+
+                    </div>
+
+
+                </form>
+
+
+            </div>
+
+
+            <!-- LOCATION MONITORING -->
+
+            <div class="card-box">
+
+
+                <div class="card-title">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    Sitio / Purok / Street Monitoring
+
+                </div>
+
+
+                <p class="card-subtitle">
+
+                    Recorded locations within the assigned Barangay,
+                    ordered by dengue case count.
+
+                </p>
+
+
+                {% if location_data %}
+
+
+                    <div class="location-grid">
+
+
+                        {% for location in location_data %}
+
+
+                            <div class="location-item">
+
+
+                                <div class="location-left">
+
+
+                                    <div class="location-name">
+
+                                        {{ location.name }}
+
+                                    </div>
+
+
+                                    <div class="location-risk">
+
+
+                                        {% if location.risk_level == "High" %}
+
+                                            <span class="risk-badge risk-high">
+
+                                                High Risk
+
+                                            </span>
+
+                                        {% elif location.risk_level == "Moderate" %}
+
+                                            <span class="risk-badge risk-moderate">
+
+                                                Moderate Risk
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="risk-badge risk-low">
+
+                                                Low Risk
+
+                                            </span>
+
+                                        {% endif %}
+
+
+                                    </div>
+
+
+                                </div>
+
+
+                                <div class="location-count">
+
+                                    <strong>
+                                        {{ location.cases }}
+                                    </strong>
+
+                                    case{{ location.cases|pluralize }}
+
+                                </div>
+
+
+                            </div>
+
+
+                        {% endfor %}
+
+
+                    </div>
+
+
+                {% else %}
+
+
+                    <div class="empty-state">
+
+                        <i class="fa-solid fa-location-crosshairs"></i>
+
+                        <h5>
+                            No Monitoring Locations Found
+                        </h5>
+
+                        <p>
+                            No locations matched the selected search
+                            or risk filter.
+                        </p>
+
+                    </div>
+
+
+                {% endif %}
+
+
+            </div>
+
+
+            <!-- RISK LEVEL GUIDE -->
+
+            <div class="card-box">
+
+
+                <div class="card-title">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    Dengue Risk Level Guide
+
+                </div>
+
+
+                <p class="card-subtitle">
+
+                    Risk classification is based on recorded
+                    dengue case volume.
+
+                </p>
+
+
+                <div class="legend-grid">
+
+
+                    <div class="legend-card">
+
+                        <h6>
+
+                            <span class="risk-badge risk-low">
+                                Low
+                            </span>
+
+                        </h6>
+
+                        <p>
+
+                            0 to 5 recorded dengue cases.
+
+                        </p>
+
+                    </div>
+
+
+                    <div class="legend-card">
+
+                        <h6>
+
+                            <span class="risk-badge risk-moderate">
+                                Moderate
+                            </span>
+
+                        </h6>
+
+                        <p>
+
+                            6 to 15 recorded dengue cases.
+
+                        </p>
+
+                    </div>
+
+
+                    <div class="legend-card">
+
+                        <h6>
+
+                            <span class="risk-badge risk-high">
+                                High
+                            </span>
+
+                        </h6>
+
+                        <p>
+
+                            16 or more recorded dengue cases.
+
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     BOOTSTRAP
+===================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+</body>
+
+</html>

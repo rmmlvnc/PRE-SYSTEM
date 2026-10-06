@@ -1,0 +1,15 @@
+{
+  "source": "Open-Meteo Historical Weather API",
+  "source_url": "https://archive-api.open-meteo.com/v1/archive?latitude=8.228&longitude=124.2452&start_date=2020-01-01&end_date=2026-01-31&daily=temperature_2m_mean%2Cprecipitation_sum&hourly=relative_humidity_2m&timezone=Asia%2FManila",
+  "coordinates": {
+    "latitude": 8.228,
+    "longitude": 124.2452
+  },
+  "retrieved_at_utc": "2026-10-04T18:02:12.361360+00:00",
+  "weather_scope": "One city-level grid point applied to all barangays",
+  "limitations": "Reanalysis/model weather; validate against PAGASA observations when available.",
+  "location_scope": "44 official City of Iligan barangays (PSGC)",
+  "psgc_source": "https://psa.gov.ph/classification/psgc/barangays/1030900000",
+  "rows": 3212,
+  "weather_retrieval_note": null
+}

@@ -1,0 +1,1456 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        DengueWatch | BHW Dashboard
+    </title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7f9;
+            color: #1f2937;
+        }
+
+        /* =================================================
+           SIDEBAR
+        ================================================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #0f766e;
+            color: white;
+            padding: 28px 14px;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px 25px;
+            border-bottom:
+                1px solid rgba(255,255,255,0.25);
+        }
+
+        .brand i {
+            font-size: 25px;
+        }
+
+        .brand-text strong {
+            display: block;
+            font-size: 20px;
+        }
+
+        .brand-text small {
+            font-size: 9px;
+            opacity: 0.8;
+        }
+
+        .menu-title {
+            margin: 25px 10px 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 11px 10px;
+            margin-bottom: 4px;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background:
+                rgba(255,255,255,0.18);
+        }
+
+        .sidebar a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 14px;
+            right: 14px;
+            border-top:
+                1px solid rgba(255,255,255,0.25);
+            padding-top: 15px;
+        }
+
+        /* =================================================
+           MAIN
+        ================================================= */
+
+        .main {
+            margin-left: 200px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 75px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        .topbar h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .topbar small {
+            color: #6b7280;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            background: #e6f4f1;
+            color: #0f766e;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .user-icon {
+            width: 35px;
+            height: 35px;
+            background: #e6f4f1;
+            color: #0f766e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content {
+            padding: 28px;
+        }
+
+        .welcome {
+            margin-bottom: 22px;
+        }
+
+        .welcome h2 {
+            margin: 0 0 5px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .welcome p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* =================================================
+           NOTICES
+        ================================================= */
+
+        .notice {
+            background: #e6f4f1;
+            border-left: 4px solid #0f766e;
+            padding: 15px 18px;
+            border-radius: 8px;
+            margin-bottom: 22px;
+            font-size: 13px;
+            line-height: 1.65;
+            color: #374151;
+        }
+
+        .notice strong {
+            color: #0f766e;
+        }
+
+        .notice-warning {
+            background: #fff7ed;
+            border-left-color: #f97316;
+        }
+
+        .notice-warning strong {
+            color: #c2410c;
+        }
+
+        /* =================================================
+           STATS
+        ================================================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            flex-shrink: 0;
+            border-radius: 9px;
+            background: #e6f4f1;
+            color: #0f766e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            margin: 2px 0 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .risk-value-low {
+            color: #15803d;
+        }
+
+        .risk-value-moderate {
+            color: #a16207;
+        }
+
+        .risk-value-high {
+            color: #c2410c;
+        }
+
+        .risk-value-critical {
+            color: #b91c1c;
+        }
+
+        /* =================================================
+           CARDS
+        ================================================= */
+
+        .card-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .card-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 5px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .card-title i {
+            color: #0f766e;
+        }
+
+        .card-subtitle {
+            margin: 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        /* =================================================
+           QUICK ACTIONS
+        ================================================= */
+
+        .action-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .action-card {
+            display: block;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 18px;
+            text-decoration: none;
+            color: #1f2937;
+            transition: 0.2s;
+        }
+
+        .action-card:hover {
+            border-color: #0f766e;
+            transform: translateY(-2px);
+            color: #0f766e;
+        }
+
+        .action-card i {
+            color: #0f766e;
+            font-size: 22px;
+            margin-bottom: 11px;
+        }
+
+        .action-card strong {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .action-card small {
+            display: block;
+            color: #6b7280;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* =================================================
+           ASSIGNED AREA
+        ================================================= */
+
+        .area-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .area-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 18px;
+        }
+
+        .area-card i {
+            color: #0f766e;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .area-card h6 {
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .area-card p {
+            margin: 4px 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        /* =================================================
+           HOTSPOT / PUROKS
+        ================================================= */
+
+        .risk-banner {
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .risk-banner-low {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .risk-banner-moderate {
+            background: #fefce8;
+            border-color: #fef08a;
+        }
+
+        .risk-banner-high {
+            background: #fff7ed;
+            border-color: #fed7aa;
+        }
+
+        .risk-banner-critical {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .risk-banner-none {
+            background: #f8fafc;
+        }
+
+        .purok-list {
+            display: grid;
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .purok-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .purok-item strong {
+            font-size: 12px;
+        }
+
+        .purok-item span {
+            color: #6b7280;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        /* =================================================
+           TABLE
+        ================================================= */
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .report-table th {
+            background: #f8fafc;
+            color: #6b7280;
+            font-size: 11px;
+            padding: 11px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .report-table td {
+            font-size: 12px;
+            padding: 11px;
+            border-bottom: 1px solid #f1f1f1;
+            vertical-align: middle;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 14px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .status-pending {
+            background: #fef9c3;
+            color: #a16207;
+        }
+
+        .status-approved,
+        .status-validated {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-default {
+            background: #e6f4f1;
+            color: #0f766e;
+        }
+
+        /* =================================================
+           RISK GUIDE
+        ================================================= */
+
+        .risk-guide {
+            display: grid;
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .risk-guide-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 16px;
+        }
+
+        .risk-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 7px;
+        }
+
+        .dot-low {
+            background: #22c55e;
+        }
+
+        .dot-moderate {
+            background: #facc15;
+        }
+
+        .dot-high {
+            background: #f97316;
+        }
+
+        .dot-critical {
+            background: #dc2626;
+        }
+
+        .risk-guide-card h6 {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .risk-guide-card strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .risk-guide-card p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* =================================================
+           RESPONSIVE
+        ================================================= */
+
+        @media (max-width: 1100px) {
+
+            .stats,
+            .risk-guide {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+            .action-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 70px;
+                padding: 20px 8px;
+            }
+
+            .brand-text,
+            .menu-title,
+            .sidebar a span {
+                display: none;
+            }
+
+            .brand {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .sidebar a {
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 70px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .stats,
+            .risk-guide,
+            .action-grid,
+            .area-grid,
+            .purok-list {
+                grid-template-columns: 1fr;
+            }
+
+            .card-title-row {
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- =====================================================
+     BHW SIDEBAR
+===================================================== -->
+
+{% include 'includes/role_sidebar.html' %}
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<div class="main">
+
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+
+        <div>
+
+            <h4>
+                BHW Dashboard
+            </h4>
+
+            <small>
+                Barangay Health Worker Monitoring
+            </small>
+
+        </div>
+
+        <div class="user-info">
+
+            <span class="role-badge">
+                {{ current_user_name }} · {{ current_user_role }}
+            </span>
+
+            <div class="user-icon">
+
+                <i class="fa-solid fa-user-nurse"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="content">
+
+        <!-- =================================================
+             WELCOME
+        ================================================= -->
+
+        <div class="welcome">
+
+            <h2>
+                Welcome,
+                {{ request.user.first_name|default:request.user.username }}!
+            </h2>
+
+            <p>
+                Report and monitor dengue information within your
+                assigned barangay and relevant Sitio / Purok /
+                Street areas.
+            </p>
+
+        </div>
+
+        <!-- =================================================
+             ACCESS NOTICE
+        ================================================= -->
+
+        <div class="notice">
+
+            <strong>
+                <i class="fa-solid fa-user-nurse"></i>
+                Barangay Health Worker Access
+            </strong>
+
+            <br>
+
+            BHW access is limited to assigned-area dengue
+            monitoring and reporting. Case validation, user
+            management, city-wide administration, and system
+            settings remain under the City Health Office.
+
+        </div>
+
+        {% if not assignment_configured %}
+
+            <div class="notice notice-warning">
+
+                <strong>
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    No Assigned Barangay
+                </strong>
+
+                <br>
+
+                This BHW account does not currently have an
+                assigned barangay in the system. The City Health
+                Office must assign the account before barangay
+                case totals and hotspot information can be shown.
+
+            </div>
+
+        {% endif %}
+
+        <!-- =================================================
+             STATISTICS
+        ================================================= -->
+
+        <div class="stats">
+
+            <!-- AREA CASES -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-virus"></i>
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ total_cases|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Cases in Assigned Barangay
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- SUBMITTED -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ submitted_reports|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Reports Submitted by You
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- RISK -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+
+                <div>
+
+                    <h3
+                        class="
+                            {% if current_risk == 'Low' %}
+                                risk-value-low
+                            {% elif current_risk == 'Moderate' %}
+                                risk-value-moderate
+                            {% elif current_risk == 'High' %}
+                                risk-value-high
+                            {% elif current_risk == 'Critical' %}
+                                risk-value-critical
+                            {% endif %}
+                        "
+                    >
+                        {{ current_risk|default:"N/A" }}
+                    </h3>
+
+                    <p>
+                        Current Barangay Risk Level
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- PUROKS -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ monitored_puroks|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Recorded Locations / Puroks
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             QUICK ACTIONS
+        ================================================= -->
+
+        <div class="card-box">
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-bolt"></i>
+
+                BHW Quick Actions
+            </div>
+
+            <p class="card-subtitle">
+                Functions relevant to barangay-level dengue
+                surveillance and reporting.
+            </p>
+
+            <br>
+
+            <div class="action-grid">
+
+                <a
+                    href="{% url 'cases' %}"
+                    class="action-card"
+                >
+
+                    <i class="fa-solid fa-file-medical"></i>
+
+                    <strong>
+                        Dengue Case Monitoring
+                    </strong>
+
+                    <small>
+                        View dengue case information permitted for
+                        your BHW role.
+                    </small>
+
+                </a>
+
+                <a
+                    href="#assigned-area"
+                    class="action-card"
+                >
+
+                    <i class="fa-solid fa-location-dot"></i>
+
+                    <strong>
+                        Assigned Area
+                    </strong>
+
+                    <small>
+                        View the barangay and area assigned to your
+                        account.
+                    </small>
+
+                </a>
+
+                <a
+                    href="#hotspot-info"
+                    class="action-card"
+                >
+
+                    <i class="fa-solid fa-map-location-dot"></i>
+
+                    <strong>
+                        Hotspot Information
+                    </strong>
+
+                    <small>
+                        View dengue case volume and hotspot risk
+                        relevant to your assigned barangay.
+                    </small>
+
+                </a>
+
+                <a
+                    href="#risk-information"
+                    class="action-card"
+                >
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <strong>
+                        Risk Levels
+                    </strong>
+
+                    <small>
+                        Review the same DengueWatch risk
+                        classifications used by the hotspot map.
+                    </small>
+
+                </a>
+
+                <a
+                    href="#purok-information"
+                    class="action-card"
+                >
+
+                    <i class="fa-solid fa-house"></i>
+
+                    <strong>
+                        Barangay / Purok Information
+                    </strong>
+
+                    <small>
+                        Review recorded Sitio / Purok / Street
+                        locations in your assigned barangay.
+                    </small>
+
+                </a>
+
+                <a
+                    href="#recent-reports"
+                    class="action-card"
+                >
+
+                    <i class="fa-solid fa-clipboard-list"></i>
+
+                    <strong>
+                        My Recent Reports
+                    </strong>
+
+                    <small>
+                        Review the latest dengue reports submitted
+                        using your account.
+                    </small>
+
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             ASSIGNED AREA
+        ================================================= -->
+
+        <div
+            class="card-box"
+            id="assigned-area"
+        >
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-location-dot"></i>
+
+                Assigned Area
+            </div>
+
+            <p class="card-subtitle">
+                BHW monitoring must remain limited to the area
+                assigned by the City Health Office.
+            </p>
+
+            <br>
+
+            <div class="area-grid">
+
+                <div class="area-card">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    <h6>
+                        Assigned Barangay
+                    </h6>
+
+                    <p>
+                        <strong>
+                            Barangay:
+                        </strong>
+
+                        {{ assigned_barangay|default:"Not assigned" }}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Access:
+                        </strong>
+
+                        Relevant barangay dengue information only
+                    </p>
+
+                </div>
+
+                <div class="area-card">
+
+                    <i class="fa-solid fa-location-crosshairs"></i>
+
+                    <h6>
+                        Assigned Purok / Area
+                    </h6>
+
+                    <p>
+                        <strong>
+                            Purok / Area:
+                        </strong>
+
+                        {{ assigned_purok|default:"Barangay-wide assignment" }}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Monitoring:
+                        </strong>
+
+                        Case reporting, hotspot awareness, and
+                        prevention support
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             HOTSPOT INFORMATION
+        ================================================= -->
+
+        <div
+            class="card-box"
+            id="hotspot-info"
+        >
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-map-location-dot"></i>
+
+                Assigned Barangay Hotspot Information
+            </div>
+
+            <p class="card-subtitle">
+                This summary uses the same case-volume risk
+                classification as the DengueWatch hotspot map.
+            </p>
+
+            <br>
+
+            <div
+                class="
+                    risk-banner
+                    {% if current_risk == 'Low' %}
+                        risk-banner-low
+                    {% elif current_risk == 'Moderate' %}
+                        risk-banner-moderate
+                    {% elif current_risk == 'High' %}
+                        risk-banner-high
+                    {% elif current_risk == 'Critical' %}
+                        risk-banner-critical
+                    {% else %}
+                        risk-banner-none
+                    {% endif %}
+                "
+            >
+
+                <strong>
+                    {{ assigned_barangay|default:"No assigned barangay" }}
+                </strong>
+
+                <br>
+
+                {% if assignment_configured %}
+
+                    Recorded Cases:
+                    <strong>
+                        {{ total_cases|default:"0" }}
+                    </strong>
+
+                    &nbsp; | &nbsp;
+
+                    Risk Level:
+                    <strong>
+                        {{ current_risk|default:"None" }}
+                    </strong>
+
+                {% else %}
+
+                    Hotspot information will appear after the CHO
+                    assigns this account to a barangay.
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             PUROK INFORMATION
+        ================================================= -->
+
+        <div
+            class="card-box"
+            id="purok-information"
+        >
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-house"></i>
+
+                Sitio / Purok / Street Monitoring
+            </div>
+
+            <p class="card-subtitle">
+                Recorded locations within the assigned barangay,
+                ordered by dengue case count.
+            </p>
+
+            <br>
+
+            {% if assigned_purok_data %}
+
+                <div class="purok-list">
+
+                    {% for item in assigned_purok_data %}
+
+                        <div class="purok-item">
+
+                            <strong>
+                                {{ item.purok|default:item.name }}
+                            </strong>
+
+                            <span>
+                                {{ item.case_count|default:item.cases }}
+                                case{{ item.case_count|default:item.cases|pluralize }}
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="text-muted small">
+                    No Sitio / Purok / Street data is available
+                    for the assigned barangay.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        <!-- =================================================
+             RECENT REPORTS
+        ================================================= -->
+
+        <div
+            class="card-box"
+            id="recent-reports"
+        >
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-clipboard-list"></i>
+
+                My Recent Case Reports
+            </div>
+
+            <p class="card-subtitle">
+                Latest dengue reports submitted using your BHW
+                account.
+            </p>
+
+            <br>
+
+            <div class="table-responsive">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Case ID
+                            </th>
+
+                            <th>
+                                Date Reported
+                            </th>
+
+                            <th>
+                                Case Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for case in recent_cases %}
+
+                            <tr>
+
+                                <td>
+                                    #{{ case.dengue_case_id }}
+                                </td>
+
+                                <td>
+                                    {{ case.date_reported }}
+                                </td>
+
+                                <td>
+
+                                    {% with status=case.case_status|lower %}
+
+                                        <span
+                                            class="
+                                                status
+                                                {% if status == 'pending' %}
+                                                    status-pending
+                                                {% elif status == 'approved' or status == 'validated' %}
+                                                    status-approved
+                                                {% elif status == 'rejected' %}
+                                                    status-rejected
+                                                {% else %}
+                                                    status-default
+                                                {% endif %}
+                                            "
+                                        >
+                                            {{ case.case_status }}
+                                        </span>
+
+                                    {% endwith %}
+
+                                </td>
+
+                            </tr>
+
+                        {% empty %}
+
+                            <tr>
+
+                                <td
+                                    colspan="3"
+                                    class="text-center text-muted py-4"
+                                >
+                                    You have not submitted any
+                                    dengue case reports yet.
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             RISK GUIDE
+        ================================================= -->
+
+        <div
+            class="card-box"
+            id="risk-information"
+        >
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                DengueWatch Risk Levels
+            </div>
+
+            <p class="card-subtitle">
+                The dashboard uses the same display thresholds as
+                the hotspot map. These are monitoring categories,
+                not official DOH outbreak declarations.
+            </p>
+
+            <br>
+
+            <div class="risk-guide">
+
+                <div class="risk-guide-card">
+
+                    <h6>
+                        <span class="risk-dot dot-low"></span>
+                        Low
+                    </h6>
+
+                    <strong>
+                        1 - 5 cases
+                    </strong>
+
+                    <p>
+                        Continue routine monitoring, prevention
+                        reminders, and environmental clean-up.
+                    </p>
+
+                </div>
+
+                <div class="risk-guide-card">
+
+                    <h6>
+                        <span class="risk-dot dot-moderate"></span>
+                        Moderate
+                    </h6>
+
+                    <strong>
+                        6 - 50 cases
+                    </strong>
+
+                    <p>
+                        Increase monitoring and promptly report
+                        relevant dengue cases to the CHO.
+                    </p>
+
+                </div>
+
+                <div class="risk-guide-card">
+
+                    <h6>
+                        <span class="risk-dot dot-high"></span>
+                        High
+                    </h6>
+
+                    <strong>
+                        51 - 100 cases
+                    </strong>
+
+                    <p>
+                        Give priority to monitoring, prevention
+                        activities, alerts, and coordination.
+                    </p>
+
+                </div>
+
+                <div class="risk-guide-card">
+
+                    <h6>
+                        <span class="risk-dot dot-critical"></span>
+                        Critical
+                    </h6>
+
+                    <strong>
+                        101+ cases
+                    </strong>
+
+                    <p>
+                        Immediately strengthen coordination with
+                        the City Health Office and prioritize
+                        prevention and response activities.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+             FINAL LIMITATION
+        ================================================= -->
+
+        <div class="notice">
+
+            <strong>
+                Decision-Support Notice
+            </strong>
+
+            <br>
+
+            DengueWatch risk and hotspot information is intended
+            to support surveillance and dengue prevention. It
+            should not replace medical diagnosis or professional
+            epidemiological assessment.
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

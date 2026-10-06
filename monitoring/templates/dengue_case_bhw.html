@@ -1,0 +1,2404 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Dengue Cases | DengueWatch</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7f9;
+            color: #1f2937;
+        }
+
+
+        /* =================================================
+           SIDEBAR
+        ================================================= */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 200px;
+            height: 100vh;
+            background: #0f766e;
+            color: white;
+            padding: 28px 14px;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.25);
+        }
+
+        .brand i {
+            font-size: 25px;
+        }
+
+        .brand-text strong {
+            display: block;
+            font-size: 20px;
+        }
+
+        .brand-text small {
+            font-size: 9px;
+            opacity: 0.8;
+        }
+
+        .menu-title {
+            margin: 25px 10px 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 11px 10px;
+            margin-bottom: 4px;
+            color: white;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(255,255,255,0.18);
+        }
+
+        .sidebar a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 14px;
+            right: 14px;
+            border-top: 1px solid rgba(255,255,255,0.25);
+            padding-top: 15px;
+        }
+
+
+        /* =================================================
+           MAIN
+        ================================================= */
+
+        .main {
+            margin-left: 200px;
+            min-height: 100vh;
+        }
+
+
+        /* =================================================
+           TOPBAR
+        ================================================= */
+
+        .topbar {
+            height: 75px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+        }
+
+        .topbar h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .topbar small {
+            color: #6b7280;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            background: #e6f4f1;
+            color: #0f766e;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .user-icon {
+            width: 35px;
+            height: 35px;
+            background: #e6f4f1;
+            color: #0f766e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        /* =================================================
+           CONTENT
+        ================================================= */
+
+        .content {
+            padding: 28px;
+        }
+
+        .page-title {
+            margin-bottom: 22px;
+        }
+
+        .page-title h2 {
+            margin: 0 0 5px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .page-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .page-title strong {
+            color: #0f766e;
+        }
+
+
+        /* =================================================
+           NOTICE
+        ================================================= */
+
+        .notice {
+            padding: 16px 18px;
+            border-radius: 8px;
+            margin-bottom: 22px;
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .notice-info {
+            background: #e6f4f1;
+            border-left: 4px solid #0f766e;
+            color: #374151;
+        }
+
+        .notice-info strong {
+            color: #0f766e;
+        }
+
+        .notice-danger {
+            background: #fff7ed;
+            border-left: 4px solid #f97316;
+            color: #7c2d12;
+        }
+
+        .notice-danger strong {
+            color: #c2410c;
+        }
+
+        .notice-safe {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            color: #166534;
+        }
+
+        .notice-safe strong {
+            color: #15803d;
+        }
+
+
+        /* =================================================
+           STATISTICS
+        ================================================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            flex-shrink: 0;
+            border-radius: 9px;
+            background: #e6f4f1;
+            color: #0f766e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+        }
+
+        .stat-icon.current {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .stat-icon.pending {
+            background: #fefce8;
+            color: #ca8a04;
+        }
+
+        .stat-icon.recovered {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            margin: 2px 0 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+
+        /* =================================================
+           CARDS
+        ================================================= */
+
+        .card-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 5px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .card-title i {
+            color: #0f766e;
+        }
+
+        .card-subtitle {
+            margin: 0;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+
+        /* =================================================
+           AREA
+        ================================================= */
+
+        .area-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .area-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 18px;
+            background: #ffffff;
+        }
+
+        .area-card > i {
+            color: #0f766e;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .area-card h6 {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .area-card p {
+            font-size: 12px;
+            color: #6b7280;
+            margin: 6px 0;
+        }
+
+        .area-card p strong {
+            color: #374151;
+        }
+
+        .assignment-badge {
+            display: inline-block;
+            padding: 5px 9px;
+            background: #e6f4f1;
+            color: #0f766e;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+
+        /* =================================================
+           FILTER
+        ================================================= */
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-control,
+        .form-select {
+            height: 42px;
+            font-size: 13px;
+            border-color: #d1d5db;
+        }
+
+        .btn-search {
+            height: 42px;
+            border: none;
+            border-radius: 6px;
+            padding: 0 18px;
+            background: #0f766e;
+            color: white;
+            font-size: 13px;
+        }
+
+        .btn-search:hover {
+            background: #115e59;
+        }
+
+        .btn-reset {
+            height: 42px;
+            border-radius: 6px;
+            padding: 0 15px;
+            border: 1px solid #d1d5db;
+            background: #f3f4f6;
+            color: #374151;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .btn-reset:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+
+        /* =================================================
+           TABLE
+        ================================================= */
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .case-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .case-table th {
+            background: #f8fafc;
+            color: #6b7280;
+            font-size: 11px;
+            padding: 11px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        .case-table td {
+            font-size: 12px;
+            padding: 11px;
+            border-bottom: 1px solid #f1f1f1;
+            vertical-align: middle;
+        }
+
+        .case-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .case-id {
+            font-weight: 700;
+            color: #0f766e;
+        }
+
+
+        /* =================================================
+           STATUS
+        ================================================= */
+
+        .status {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 14px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .status-pending {
+            background: #fef9c3;
+            color: #a16207;
+        }
+
+        .status-confirmed,
+        .status-active {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-recovered {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-rejected {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .status-default {
+            background: #e6f4f1;
+            color: #0f766e;
+        }
+
+
+        /* =================================================
+           VIEW BUTTON
+        ================================================= */
+
+        .btn-view {
+            border: 1px solid #0f766e;
+            color: #0f766e;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+
+        .btn-view:hover {
+            background: #0f766e;
+            color: white;
+        }
+
+
+        /* =================================================
+           MODAL
+        ================================================= */
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section h6 {
+            color: #0f766e;
+            font-size: 13px;
+            font-weight: 700;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .detail-label {
+            width: 170px;
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+
+        /* =================================================
+           EMPTY
+        ================================================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 55px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h5 {
+            color: #374151;
+            font-size: 16px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+        }
+
+
+        /* =================================================
+           RESPONSIVE
+        ================================================= */
+
+        @media (max-width: 1100px) {
+
+            .stats {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 70px;
+                padding: 20px 8px;
+            }
+
+            .brand-text,
+            .menu-title,
+            .sidebar a span {
+                display: none;
+            }
+
+            .brand {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .sidebar a {
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 70px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .stats,
+            .area-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-row {
+                flex-direction: column;
+            }
+
+            .detail-label {
+                width: 100%;
+                margin-bottom: 3px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     BHW SIDEBAR
+===================================================== -->
+
+{% include 'includes/role_sidebar.html' %}
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<div class="main">
+
+
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+
+
+        <div>
+
+            <h4>
+                Dengue Cases
+            </h4>
+
+            <small>
+                Barangay Health Worker Monitoring
+            </small>
+
+        </div>
+
+
+        <div class="user-info">
+
+            <span class="role-badge">
+
+                {{ current_user_name }} · {{ current_user_role }}
+
+            </span>
+
+
+            <div class="user-icon">
+
+                <i class="fa-solid fa-user-nurse"></i>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- CONTENT -->
+
+    <div class="content">
+
+
+        <!-- =================================================
+             PAGE TITLE
+        ================================================= -->
+
+        <div class="page-title">
+
+            <h2>
+                Dengue Case Monitoring
+            </h2>
+
+
+            {% if request.user.assigned_barangay %}
+
+                <p>
+
+                    Monitoring dengue information for
+
+                    <strong>
+                        Barangay
+                        {{ request.user.assigned_barangay.barangay_name }}
+                    </strong>
+
+
+                    {% if request.user.assigned_purok %}
+
+                        -
+
+                        <strong>
+                            {{ request.user.assigned_purok.purok_name }}
+                        </strong>
+
+                    {% else %}
+
+                        -
+
+                        <strong>
+                            Barangay-wide Monitoring
+                        </strong>
+
+                    {% endif %}
+
+                </p>
+
+            {% else %}
+
+                <p>
+                    No Barangay monitoring area has been
+                    assigned to your account.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =================================================
+             ASSIGNMENT / CURRENT CASE ALERT
+        ================================================= -->
+
+        {% if not request.user.assigned_barangay %}
+
+
+            <div class="notice notice-danger">
+
+                <strong>
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    No Assigned Barangay
+
+                </strong>
+
+                <br>
+
+                Your Barangay Health Worker account has not yet
+                been assigned to a monitoring area.
+
+                The City Health Office must assign your account
+                to a Barangay before area-specific dengue case
+                monitoring can be displayed.
+
+            </div>
+
+
+        {% elif current_cases > 0 %}
+
+
+            <div class="notice notice-danger">
+
+                <strong>
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    Current Dengue Cases Detected
+
+                </strong>
+
+                <br>
+
+                There are currently
+
+                <strong>
+                    {{ current_cases }}
+                </strong>
+
+                confirmed or active dengue
+                case{{ current_cases|pluralize }}
+
+                recorded in
+
+                <strong>
+                    Barangay
+                    {{ request.user.assigned_barangay.barangay_name }}
+                </strong>
+
+
+                {% if request.user.assigned_purok %}
+
+                    -
+
+                    <strong>
+                        {{ request.user.assigned_purok.purok_name }}
+                    </strong>
+
+                {% endif %}.
+
+                Continue monitoring and coordinate with the
+                City Health Office when necessary.
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="notice notice-safe">
+
+                <strong>
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    No Current Active Dengue Cases
+
+                </strong>
+
+                <br>
+
+                There are currently no confirmed or active dengue
+                cases recorded in
+
+                <strong>
+                    Barangay
+                    {{ request.user.assigned_barangay.barangay_name }}
+                </strong>
+
+
+                {% if request.user.assigned_purok %}
+
+                    -
+
+                    <strong>
+                        {{ request.user.assigned_purok.purok_name }}
+                    </strong>
+
+                {% endif %}.
+
+                Continue routine dengue surveillance and
+                prevention activities.
+
+            </div>
+
+
+        {% endif %}
+
+
+        <!-- =================================================
+             BHW ACCESS NOTICE
+        ================================================= -->
+
+        <div class="notice notice-info">
+
+            <strong>
+
+                <i class="fa-solid fa-user-nurse"></i>
+
+                Barangay Health Worker Access
+
+            </strong>
+
+            <br>
+
+
+            {% if request.user.assigned_barangay %}
+
+                You are authorized to monitor dengue information for
+
+                <strong>
+                    Barangay
+                    {{ request.user.assigned_barangay.barangay_name }}
+                </strong>
+
+
+                {% if request.user.assigned_purok %}
+
+                    -
+
+                    <strong>
+                        {{ request.user.assigned_purok.purok_name }}
+                    </strong>
+
+                {% else %}
+
+                    with
+
+                    <strong>
+                        barangay-wide monitoring
+                    </strong>
+
+                {% endif %}.
+
+            {% else %}
+
+                Your account currently has no assigned Barangay.
+
+            {% endif %}
+
+            <br>
+
+            Pending reports are not counted as current confirmed
+            dengue cases until they are reviewed and confirmed.
+
+        </div>
+
+
+        <!-- =================================================
+             SUMMARY CARDS
+        ================================================= -->
+
+        <div class="stats">
+
+
+            <!-- CURRENT -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon current">
+
+                    <i class="fa-solid fa-virus"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ current_cases|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Current Dengue Cases
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- PENDING -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon pending">
+
+                    <i class="fa-solid fa-clock"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ pending_cases|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Pending Reports
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- RECOVERED -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon recovered">
+
+                    <i class="fa-solid fa-heart-pulse"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ recovered_cases|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Recovered Cases
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- SUBMITTED -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+
+                    <i class="fa-solid fa-paper-plane"></i>
+
+                </div>
+
+                <div>
+
+                    <h3>
+                        {{ submitted_reports|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Reports Submitted by You
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             ASSIGNED MONITORING AREA
+        ================================================= -->
+
+        <div class="card-box">
+
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-location-dot"></i>
+
+                Assigned Monitoring Area
+
+            </div>
+
+
+            <p class="card-subtitle">
+
+                Your monitoring area is assigned by the
+                City Health Office.
+
+                Any assignment changes made by CHO will
+                automatically appear here.
+
+            </p>
+
+
+            <br>
+
+
+            {% if request.user.assigned_barangay %}
+
+
+                <div class="area-grid">
+
+
+                    <!-- BARANGAY -->
+
+                    <div class="area-card">
+
+                        <i class="fa-solid fa-map-location-dot"></i>
+
+                        <h6>
+                            Assigned Barangay
+                        </h6>
+
+
+                        <p>
+
+                            <strong>
+                                Barangay:
+                            </strong>
+
+                            {{ request.user.assigned_barangay.barangay_name }}
+
+                        </p>
+
+
+                        <p>
+
+                            <strong>
+                                Barangay ID:
+                            </strong>
+
+                            {{ request.user.assigned_barangay.barangay_id }}
+
+                        </p>
+
+
+                        <p>
+
+                            <strong>
+                                Total Recorded Cases:
+                            </strong>
+
+                            {{ total_area_cases|default:"0" }}
+
+                        </p>
+
+
+                        {% if request.user.assigned_barangay.latitude %}
+
+                            <p>
+
+                                <strong>
+                                    Latitude:
+                                </strong>
+
+                                {{ request.user.assigned_barangay.latitude }}
+
+                            </p>
+
+                        {% endif %}
+
+
+                        {% if request.user.assigned_barangay.longitude %}
+
+                            <p>
+
+                                <strong>
+                                    Longitude:
+                                </strong>
+
+                                {{ request.user.assigned_barangay.longitude }}
+
+                            </p>
+
+                        {% endif %}
+
+
+                        <span class="assignment-badge">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                            Assigned
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- PUROK -->
+
+                    <div class="area-card">
+
+                        <i class="fa-solid fa-location-crosshairs"></i>
+
+                        <h6>
+                            Assigned Purok / Area
+                        </h6>
+
+
+                        {% if request.user.assigned_purok %}
+
+                            <p>
+
+                                <strong>
+                                    Purok / Area:
+                                </strong>
+
+                                {{ request.user.assigned_purok.purok_name }}
+
+                            </p>
+
+
+                            <p>
+
+                                <strong>
+                                    Purok ID:
+                                </strong>
+
+                                {{ request.user.assigned_purok.purok_id }}
+
+                            </p>
+
+
+                            <p>
+
+                                <strong>
+                                    Monitoring Scope:
+                                </strong>
+
+                                Specific Purok monitoring
+
+                            </p>
+
+
+                        {% else %}
+
+
+                            <p>
+
+                                <strong>
+                                    Purok / Area:
+                                </strong>
+
+                                Barangay-wide assignment
+
+                            </p>
+
+
+                            <p>
+
+                                <strong>
+                                    Monitoring Scope:
+                                </strong>
+
+                                Entire Barangay
+
+                            </p>
+
+
+                        {% endif %}
+
+
+                        <p>
+
+                            <strong>
+                                Assigned By:
+                            </strong>
+
+                            City Health Office
+
+                        </p>
+
+
+                        <p>
+
+                            <strong>
+                                BHW Account:
+                            </strong>
+
+                            {{ request.user.username }}
+
+                        </p>
+
+
+                        <span class="assignment-badge">
+
+                            <i class="fa-solid fa-user-nurse"></i>
+
+                            Active Monitoring Area
+
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <div
+                    class="notice notice-danger"
+                    style="margin-bottom: 0;"
+                >
+
+                    <strong>
+
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                        Monitoring Area Not Configured
+
+                    </strong>
+
+                    <br>
+
+                    The City Health Office has not assigned a
+                    Barangay to this BHW account yet.
+
+                    Dengue case information cannot be associated
+                    with a monitoring area until an assignment
+                    is configured.
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- =================================================
+             FILTERS
+        ================================================= -->
+
+        <div class="card-box">
+
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-filter"></i>
+
+                Search and Filter My Reports
+
+            </div>
+
+
+            <p class="card-subtitle">
+
+                Search dengue reports submitted using your BHW account.
+
+            </p>
+
+
+            <br>
+
+
+            <form method="GET">
+
+
+                <div class="row g-3">
+
+
+                    <!-- SEARCH -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <label class="form-label">
+                            Search
+                        </label>
+
+                        <input
+                            type="text"
+                            name="search"
+                            class="form-control"
+                            placeholder="Search Case ID or remarks..."
+                            value="{{ search }}"
+                        >
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="col-lg-2 col-md-3">
+
+                        <label class="form-label">
+                            Status
+                        </label>
+
+                        <select
+                            name="status"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                All
+                            </option>
+
+                            <option
+                                value="Pending"
+                                {% if selected_status == "Pending" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Pending
+                            </option>
+
+                            <option
+                                value="Confirmed"
+                                {% if selected_status == "Confirmed" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Confirmed
+                            </option>
+
+                            <option
+                                value="Active"
+                                {% if selected_status == "Active" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Active
+                            </option>
+
+                            <option
+                                value="Recovered"
+                                {% if selected_status == "Recovered" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Recovered
+                            </option>
+
+                            <option
+                                value="Rejected"
+                                {% if selected_status == "Rejected" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Rejected
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- SEX -->
+
+                    <div class="col-lg-2 col-md-3">
+
+                        <label class="form-label">
+                            Sex
+                        </label>
+
+                        <select
+                            name="sex"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                All
+                            </option>
+
+                            <option
+                                value="Male"
+                                {% if selected_sex == "Male" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Male
+                            </option>
+
+                            <option
+                                value="Female"
+                                {% if selected_sex == "Female" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Female
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BLOOD TYPE -->
+
+                    <div class="col-lg-2 col-md-3">
+
+                        <label class="form-label">
+                            Blood Type
+                        </label>
+
+                        <select
+                            name="blood_type"
+                            class="form-select"
+                        >
+
+                            <option value="">
+                                All
+                            </option>
+
+                            <option value="A"
+                                {% if selected_blood_type == "A" %}selected{% endif %}>
+                                A
+                            </option>
+
+                            <option value="B"
+                                {% if selected_blood_type == "B" %}selected{% endif %}>
+                                B
+                            </option>
+
+                            <option value="AB"
+                                {% if selected_blood_type == "AB" %}selected{% endif %}>
+                                AB
+                            </option>
+
+                            <option value="O"
+                                {% if selected_blood_type == "O" %}selected{% endif %}>
+                                O
+                            </option>
+
+                            <option value="A+"
+                                {% if selected_blood_type == "A+" %}selected{% endif %}>
+                                A+
+                            </option>
+
+                            <option value="A-"
+                                {% if selected_blood_type == "A-" %}selected{% endif %}>
+                                A-
+                            </option>
+
+                            <option value="B+"
+                                {% if selected_blood_type == "B+" %}selected{% endif %}>
+                                B+
+                            </option>
+
+                            <option value="B-"
+                                {% if selected_blood_type == "B-" %}selected{% endif %}>
+                                B-
+                            </option>
+
+                            <option value="AB+"
+                                {% if selected_blood_type == "AB+" %}selected{% endif %}>
+                                AB+
+                            </option>
+
+                            <option value="AB-"
+                                {% if selected_blood_type == "AB-" %}selected{% endif %}>
+                                AB-
+                            </option>
+
+                            <option value="O+"
+                                {% if selected_blood_type == "O+" %}selected{% endif %}>
+                                O+
+                            </option>
+
+                            <option value="O-"
+                                {% if selected_blood_type == "O-" %}selected{% endif %}>
+                                O-
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BUTTONS -->
+
+                    <div
+                        class="
+                            col-lg-2
+                            col-md-3
+                            d-flex
+                            align-items-end
+                            gap-2
+                        "
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn-search"
+                            title="Search"
+                        >
+
+                            <i class="fa-solid fa-magnifying-glass"></i>
+
+                        </button>
+
+
+                        <a
+                            href="{% url 'dengue_case_bhw' %}"
+                            class="btn-reset"
+                            title="Reset"
+                        >
+
+                            <i class="fa-solid fa-rotate-left"></i>
+
+                        </a>
+
+                    </div>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+
+        <!-- =================================================
+             MY CASE REPORTS
+        ================================================= -->
+
+        <div class="card-box">
+
+
+            <div class="card-title">
+
+                <i class="fa-solid fa-clipboard-list"></i>
+
+                My Reported Dengue Cases
+
+            </div>
+
+
+            <p class="card-subtitle">
+
+                Dengue case reports submitted using
+                {{ request.user.username }}'s BHW account.
+
+            </p>
+
+
+            <br>
+
+
+            {% if dengue_cases %}
+
+
+                <div class="table-responsive">
+
+
+                    <table class="case-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Case ID
+                                </th>
+
+                                <th>
+                                    Sex
+                                </th>
+
+                                <th>
+                                    Age
+                                </th>
+
+                                <th>
+                                    Blood Type
+                                </th>
+
+                                <th>
+                                    Date Reported
+                                </th>
+
+                                <th>
+                                    Case Count
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            {% for case in dengue_cases %}
+
+
+                                <tr>
+
+
+                                    <td>
+
+                                        <span class="case-id">
+
+                                            DW-{{ case.dengue_case_id|stringformat:"04d" }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ case.patient_sex|default:"Not provided" }}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ case.patient_age|default:"Not provided" }}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if case.patient_blood_type %}
+
+                                            {{ case.patient_blood_type }}
+
+                                        {% else %}
+
+                                            Not provided
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ case.date_reported|date:"M d, Y" }}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ case.case_count|default:"1" }}
+
+                                    </td>
+
+
+                                    <!-- STATUS -->
+
+                                    <td>
+
+
+                                        {% with status=case.case_status|lower %}
+
+
+                                            {% if status == "pending" %}
+
+                                                <span class="status status-pending">
+                                                    {{ case.case_status }}
+                                                </span>
+
+
+                                            {% elif status == "confirmed" %}
+
+                                                <span class="status status-confirmed">
+                                                    {{ case.case_status }}
+                                                </span>
+
+
+                                            {% elif status == "active" %}
+
+                                                <span class="status status-active">
+                                                    {{ case.case_status }}
+                                                </span>
+
+
+                                            {% elif status == "recovered" %}
+
+                                                <span class="status status-recovered">
+                                                    {{ case.case_status }}
+                                                </span>
+
+
+                                            {% elif status == "rejected" %}
+
+                                                <span class="status status-rejected">
+                                                    {{ case.case_status }}
+                                                </span>
+
+
+                                            {% else %}
+
+                                                <span class="status status-default">
+                                                    {{ case.case_status }}
+                                                </span>
+
+
+                                            {% endif %}
+
+
+                                        {% endwith %}
+
+
+                                    </td>
+
+
+                                    <!-- VIEW -->
+
+                                    <td>
+
+                                        <button
+                                            type="button"
+                                            class="btn-view"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#caseModal{{ case.dengue_case_id }}"
+                                        >
+
+                                            <i class="fa-solid fa-eye"></i>
+
+                                            View
+
+                                        </button>
+
+                                    </td>
+
+
+                                </tr>
+
+
+                                <!-- =================================================
+                                     CASE DETAILS MODAL
+                                ================================================= -->
+
+                                <div
+                                    class="modal fade"
+                                    id="caseModal{{ case.dengue_case_id }}"
+                                    tabindex="-1"
+                                    aria-hidden="true"
+                                >
+
+
+                                    <div class="modal-dialog modal-lg">
+
+
+                                        <div class="modal-content">
+
+
+                                            <!-- HEADER -->
+
+                                            <div class="modal-header">
+
+                                                <div>
+
+                                                    <h5 class="modal-title">
+                                                        Dengue Case Details
+                                                    </h5>
+
+                                                    <small class="text-muted">
+
+                                                        Case
+                                                        DW-{{ case.dengue_case_id|stringformat:"04d" }}
+
+                                                    </small>
+
+                                                </div>
+
+
+                                                <button
+                                                    type="button"
+                                                    class="btn-close"
+                                                    data-bs-dismiss="modal"
+                                                    aria-label="Close"
+                                                ></button>
+
+                                            </div>
+
+
+                                            <!-- BODY -->
+
+                                            <div class="modal-body">
+
+
+                                                <!-- PATIENT -->
+
+                                                <div class="detail-section">
+
+
+                                                    <h6>
+
+                                                        <i class="fa-solid fa-user"></i>
+
+                                                        Patient Information
+
+                                                    </h6>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Age
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {{ case.patient_age|default:"Not provided" }}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Sex
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {{ case.patient_sex|default:"Not provided" }}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Blood Type
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {% if case.patient_blood_type %}
+
+                                                                {{ case.patient_blood_type }}
+
+                                                            {% else %}
+
+                                                                Not provided
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                </div>
+
+
+                                                <!-- CASE INFORMATION -->
+
+                                                <div class="detail-section">
+
+
+                                                    <h6>
+
+                                                        <i class="fa-solid fa-file-medical"></i>
+
+                                                        Case Information
+
+                                                    </h6>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Case ID
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            DW-{{ case.dengue_case_id|stringformat:"04d" }}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Date Reported
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {{ case.date_reported|date:"F d, Y" }}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Case Count
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {{ case.case_count|default:"1" }}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Case Status
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {{ case.case_status }}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                </div>
+
+
+                                                <!-- CURRENT BHW ASSIGNMENT -->
+
+                                                <div class="detail-section">
+
+
+                                                    <h6>
+
+                                                        <i class="fa-solid fa-location-dot"></i>
+
+                                                        Monitoring Area
+
+                                                    </h6>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Barangay
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {% if request.user.assigned_barangay %}
+
+                                                                {{ request.user.assigned_barangay.barangay_name }}
+
+                                                            {% else %}
+
+                                                                Not assigned
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Purok / Area
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {% if request.user.assigned_purok %}
+
+                                                                {{ request.user.assigned_purok.purok_name }}
+
+                                                            {% elif request.user.assigned_barangay %}
+
+                                                                Barangay-wide assignment
+
+                                                            {% else %}
+
+                                                                Not assigned
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Monitoring Scope
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {% if request.user.assigned_purok %}
+
+                                                                Specific Purok
+
+                                                            {% elif request.user.assigned_barangay %}
+
+                                                                Entire Barangay
+
+                                                            {% else %}
+
+                                                                Not configured
+
+                                                            {% endif %}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                </div>
+
+
+                                                <!-- REPORTER -->
+
+                                                <div class="detail-section">
+
+
+                                                    <h6>
+
+                                                        <i class="fa-solid fa-user-nurse"></i>
+
+                                                        Reporting Information
+
+                                                    </h6>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Reported By
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+
+                                                            {% if request.user.first_name or request.user.last_name %}
+
+                                                                {{ request.user.first_name }}
+                                                                {{ request.user.last_name }}
+
+                                                            {% else %}
+
+                                                                {{ request.user.username }}
+
+                                                            {% endif %}
+
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Username
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            {{ request.user.username }}
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Role
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+                                                            Barangay Health Worker
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                </div>
+
+
+                                                <!-- REMARKS -->
+
+                                                <div class="detail-section">
+
+
+                                                    <h6>
+
+                                                        <i class="fa-solid fa-notes-medical"></i>
+
+                                                        Remarks
+
+                                                    </h6>
+
+
+                                                    <div class="detail-row">
+
+                                                        <div class="detail-label">
+                                                            Remarks
+                                                        </div>
+
+                                                        <div class="detail-value">
+
+
+                                                            {% if case.remarks %}
+
+                                                                {{ case.remarks }}
+
+                                                            {% else %}
+
+                                                                No remarks provided.
+
+                                                            {% endif %}
+
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                </div>
+
+
+                                            </div>
+
+
+                                            <!-- FOOTER -->
+
+                                            <div class="modal-footer">
+
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-secondary"
+                                                    data-bs-dismiss="modal"
+                                                >
+
+                                                    Close
+
+                                                </button>
+
+                                            </div>
+
+
+                                        </div>
+
+
+                                    </div>
+
+
+                                </div>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            {% else %}
+
+
+                <div class="empty-state">
+
+                    <i class="fa-solid fa-file-circle-xmark"></i>
+
+                    <h5>
+                        No Dengue Reports Found
+                    </h5>
+
+                    <p>
+                        You currently have no dengue reports
+                        matching the selected search or filters.
+                    </p>
+
+                </div>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- =================================================
+             CASE STATUS GUIDE
+        ================================================= -->
+
+        <div class="notice notice-info">
+
+
+            <strong>
+
+                <i class="fa-solid fa-circle-info"></i>
+
+                Case Status Guide
+
+            </strong>
+
+            <br>
+
+            <strong>
+                Pending
+            </strong>
+
+            means the report is waiting for review.
+
+            <br>
+
+
+            <strong>
+                Confirmed / Active
+            </strong>
+
+            means the case is currently counted as a dengue case
+            in the assigned monitoring area.
+
+            <br>
+
+
+            <strong>
+                Recovered
+            </strong>
+
+            remains part of the dengue case history but is no
+            longer counted as a current dengue case.
+
+            <br>
+
+
+            <strong>
+                Rejected
+            </strong>
+
+            means the submitted report was not accepted as a
+            dengue case.
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     BOOTSTRAP JS
+===================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+</body>
+
+</html>

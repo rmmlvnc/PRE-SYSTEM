@@ -1,0 +1,43 @@
+{# Shared navigation for every authenticated DengueWatch desktop page. #}
+<style>
+  .sidebar .sidebar-brand{display:flex;align-items:center;gap:12px;padding:8px 12px 22px;border-bottom:1px solid rgba(255,255,255,.3);margin-bottom:18px}.sidebar .sidebar-brand i{font-size:25px}.sidebar .sidebar-brand strong,.sidebar .sidebar-brand h4{margin:0;color:#fff;font-size:23px;line-height:1.1}.sidebar .sidebar-brand small{display:block;color:#dff4ef;font-size:10px;margin-top:5px}.sidebar .menu-title,.sidebar .nav-title,.sidebar .sidebar-section{font-size:10px!important;text-transform:uppercase;letter-spacing:.1em;margin:18px 12px 7px!important;color:#e3f4f1!important}.sidebar a{display:flex!important;align-items:center;gap:13px;text-decoration:none!important}.sidebar a i{width:18px;text-align:center}.sidebar .logout-link,.sidebar .logout{margin-top:28px}.sidebar .logout a{margin:0}.sidebar .sidebar-brand+.menu-title{margin-top:0!important}
+</style>
+<aside class="sidebar" aria-label="Role navigation">
+  <div class="sidebar-brand"><i class="fa-solid fa-shield-virus"></i><div><strong>DengueWatch</strong><small>Monitoring System</small></div></div>
+
+  {% if request.user.role == 'CHO' %}
+    <div class="menu-title">Main</div>
+    <a href="{% url 'cho_dashboard' %}" class="{% if request.resolver_match.url_name == 'cho_dashboard' %}active{% endif %}"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+    <div class="menu-title">Dengue Monitoring</div>
+    <a href="{% url 'cases' %}" class="{% if request.resolver_match.url_name == 'cases' %}active{% endif %}"><i class="fa-solid fa-file-medical"></i><span>Dengue Cases</span></a>
+    <a href="{% url 'hotspot_map' %}" class="{% if request.resolver_match.url_name == 'hotspot_map' %}active{% endif %}"><i class="fa-solid fa-map-location-dot"></i><span>Hotspot Map</span></a>
+    <a href="{% url 'predictions' %}" class="{% if request.resolver_match.url_name == 'predictions' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i><span>AI Predictions</span></a>
+    <a href="{% url 'reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i><span>Reports & Analytics</span></a>
+    <div class="menu-title">Administration</div>
+    <a href="{% url 'user_management' %}" class="{% if request.resolver_match.url_name == 'user_management' %}active{% endif %}"><i class="fa-solid fa-users-gear"></i><span>User Management</span></a>
+    <a href="{% url 'pending_requests' %}" class="{% if request.resolver_match.url_name == 'pending_requests' %}active{% endif %}"><i class="fa-solid fa-user-clock"></i><span>Pending Requests</span></a>
+    <a href="{% url 'bhw_assignments' %}" class="{% if request.resolver_match.url_name == 'bhw_assignments' %}active{% endif %}"><i class="fa-solid fa-people-arrows"></i><span>BHW Assignments</span></a>
+    <a href="{% url 'community_reports_review' %}" class="{% if request.resolver_match.url_name == 'community_reports_review' %}active{% endif %}"><i class="fa-solid fa-comments"></i><span>Resident Community Reports</span></a>
+    <a href="{% url 'barangay_purok' %}" class="{% if request.resolver_match.url_name == 'barangay_purok' %}active{% endif %}"><i class="fa-solid fa-location-dot"></i><span>Barangay & Purok</span></a>
+    <div class="menu-title">Account</div><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
+  {% elif request.user.role == 'LGU' %}
+    <div class="menu-title">Main</div><a href="{% url 'lgu_dashboard' %}" class="{% if request.resolver_match.url_name == 'lgu_dashboard' %}active{% endif %}"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+    <div class="menu-title">City Monitoring</div>
+    <a href="{% url 'city_wide_monitoring' %}" class="{% if request.resolver_match.url_name == 'city_wide_monitoring' %}active{% endif %}"><i class="fa-solid fa-city"></i><span>City-wide Monitoring</span></a>
+    <a href="{% url 'lgu_hotspot_map' %}" class="{% if request.resolver_match.url_name == 'lgu_hotspot_map' %}active{% endif %}"><i class="fa-solid fa-map-location-dot"></i><span>Hotspot Map</span></a>
+    <a href="{% url 'lgu_risk_levels' %}" class="{% if request.resolver_match.url_name == 'lgu_risk_levels' %}active{% endif %}"><i class="fa-solid fa-triangle-exclamation"></i><span>Risk Levels</span></a>
+    <a href="{% url 'lgu_ai_predictions' %}" class="{% if request.resolver_match.url_name == 'lgu_ai_predictions' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i><span>AI Predictions</span></a>
+    <div class="menu-title">Reports</div><a href="{% url 'lgu_reports' %}" class="{% if request.resolver_match.url_name == 'lgu_reports' %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i><span>Reports & Analytics</span></a><a href="{% url 'lgu_dengue_reports' %}" class="{% if request.resolver_match.url_name == 'lgu_dengue_reports' %}active{% endif %}"><i class="fa-solid fa-file-lines"></i><span>Dengue Reports</span></a>
+    <div class="menu-title">Account</div><a href="{% url 'lgu_profile' %}" class="{% if request.resolver_match.url_name == 'lgu_profile' %}active{% endif %}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
+  {% elif request.user.role == 'BHW' %}
+    <div class="menu-title">Main</div><a href="{% url 'bhw_dashboard' %}" class="{% if request.resolver_match.url_name == 'bhw_dashboard' %}active{% endif %}"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+    <div class="menu-title">Case Monitoring</div><a href="{% url 'dengue_case_bhw' %}" class="{% if request.resolver_match.url_name == 'dengue_case_bhw' %}active{% endif %}"><i class="fa-solid fa-file-medical"></i><span>Dengue Cases</span></a>
+    <div class="menu-title">Assigned Area</div><a href="{% url 'bhw_hotspot_information' %}" class="{% if request.resolver_match.url_name == 'bhw_hotspot_information' %}active{% endif %}"><i class="fa-solid fa-map-location-dot"></i><span>Hotspot Information</span></a><a href="{% url 'bhw_dashboard' %}#assigned-area"><i class="fa-solid fa-location-dot"></i><span>Assigned Area</span></a><a href="{% url 'bhw_dashboard' %}#risk-information"><i class="fa-solid fa-triangle-exclamation"></i><span>Risk Levels</span></a>
+    <div class="menu-title">Account</div><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
+  {% elif request.user.role == 'CHW' %}
+    <div class="menu-title">Main</div><a href="{% url 'chw_dashboard' %}" class="{% if request.resolver_match.url_name == 'chw_dashboard' %}active{% endif %}"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a>
+    <div class="menu-title">Case Monitoring</div><a href="{% url 'cases' %}" class="{% if request.resolver_match.url_name == 'cases' %}active{% endif %}"><i class="fa-solid fa-file-medical"></i><span>Dengue Cases</span></a>
+    <div class="menu-title">Account</div><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
+  {% endif %}
+  <div class="logout"><a href="{% url 'logout' %}" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a></div>
+</aside>
