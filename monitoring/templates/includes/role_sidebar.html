@@ -39,11 +39,76 @@
     min-width:0;
   }
 
+  /* One account identity treatment for every authenticated desktop page. */
+  .dw-user-info {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-end !important;
+    gap:10px !important;
+    margin-left:auto !important;
+    color:#173b37 !important;
+    text-decoration:none !important;
+  }
+  .dw-user-info:hover { color:#0f766e !important; text-decoration:none !important; }
+  .dw-user-info__details { min-width:0; text-align:right; line-height:1.15; }
+  .dw-user-info__name { display:block; max-width:210px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#173b37; font-size:14px; font-weight:750; }
+  .dw-user-info__role { display:inline-block; margin-top:4px; padding:4px 9px; border-radius:999px; background:#e6f4f1; color:#0f766e; font-size:10px; font-weight:700; line-height:1.1; }
+  .dw-user-info__avatar { width:40px; height:40px; flex:0 0 40px; overflow:hidden; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#e6f4f1; color:#0f766e; border:1px solid #cbe7df; font-size:14px; font-weight:800; }
+  .dw-user-info__avatar img { width:100%; height:100%; object-fit:cover; }
+
   @media (max-width: 768px) {
     .sidebar { position:static!important; width:100%!important; min-height:auto!important; height:auto!important; max-height:none!important; }
     .sidebar ~ .main, .sidebar ~ .main-content { margin-left:0!important; width:100%!important; }
   }
 </style>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const user = {
+      name: '{{ current_user_name|default:request.user.username|escapejs }}',
+      role: '{{ current_user_role|default:request.user.get_role_display|escapejs }}',
+      initials: '{{ request.user.first_name|default:request.user.username|slice:":1"|upper|escapejs }}{{ request.user.last_name|slice:":1"|upper|escapejs }}',
+      picture: '{% if request.user.profile_picture %}{{ request.user.profile_picture.url|escapejs }}{% endif %}',
+      profile: '{% if request.user.role == "LGU" %}{% url "lgu_profile" %}{% else %}{% url "profile" %}{% endif %}'
+    };
+    document.querySelectorAll('.topbar').forEach(function (topbar) {
+      let target = topbar.querySelector('.user-info, .user-area');
+      if (!target) {
+        target = Array.from(topbar.children).find(function (child) {
+          return child.classList && child.classList.contains('text-end');
+        });
+      }
+      if (target) {
+        target.className = 'dw-user-info-slot';
+        const accountBlock = document.createElement('a');
+        accountBlock.className = 'dw-user-info';
+        accountBlock.href = user.profile;
+        accountBlock.setAttribute('aria-label', 'Open my profile');
+        const details = document.createElement('span');
+        details.className = 'dw-user-info__details';
+        const name = document.createElement('span');
+        name.className = 'dw-user-info__name';
+        name.textContent = user.name;
+        const role = document.createElement('span');
+        role.className = 'dw-user-info__role';
+        role.textContent = user.role || 'Authorized personnel';
+        const avatar = document.createElement('span');
+        avatar.className = 'dw-user-info__avatar';
+        if (user.picture) {
+          const image = document.createElement('img');
+          image.src = user.picture;
+          image.alt = '';
+          avatar.appendChild(image);
+        } else {
+          avatar.textContent = user.initials || 'U';
+          avatar.setAttribute('aria-hidden', 'true');
+        }
+        details.append(name, role);
+        accountBlock.append(details, avatar);
+        target.replaceChildren(accountBlock);
+      }
+    });
+  });
+</script>
 <aside class="sidebar" aria-label="Role navigation">
   <div class="sidebar-brand"><i class="fa-solid fa-shield-virus"></i><div><strong>DengueWatch</strong><small>Monitoring System</small></div></div>
 

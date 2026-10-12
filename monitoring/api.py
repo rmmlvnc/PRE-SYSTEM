@@ -42,6 +42,57 @@ def _error(message, status=400, fields=None):
     return JsonResponse(data, status=status)
 
 
+def _map_key(value):
+    """Match display labels to the official boundary GeoJSON labels."""
+    return " ".join(str(value or "").lower().replace("-", " ").replace(".", " ").split())
+
+
+def _official_barangay_centers():
+    """Return one display coordinate per official barangay boundary.
+
+    Historical case records do not contain coordinates. Deriving these points
+    from the bundled boundary geometry keeps the resident hotspot map visible
+    without inventing a location or using an external map service.
+    """
+    boundary_path = Path(settings.BASE_DIR) / "static" / "data" / "iligan_barangays.geojson"
+    try:
+        features = json.loads(boundary_path.read_text(encoding="utf-8")).get("features", [])
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+    def pairs(value):
+        if isinstance(value, list) and len(value) >= 2 and all(isinstance(v, (int, float)) for v in value[:2]):
+            return [(float(value[0]), float(value[1]))]
+        if isinstance(value, list):
+            return [pair for child in value for pair in pairs(child)]
+        return []
+
+    centers = {}
+    for feature in features:
+        name = feature.get("properties", {}).get("brgy_name")
+        coordinates = pairs(feature.get("geometry", {}).get("coordinates", []))
+        if name and coordinates:
+            longitude = sum(pair[0] for pair in coordinates) / len(coordinates)
+            latitude = sum(pair[1] for pair in coordinates) / len(coordinates)
+            centers[_map_key(name)] = (latitude, longitude)
+    return centers
+
+
+def _historical_map_item(index, item, centers):
+    latitude, longitude = centers.get(_map_key(item["barangay"]), (None, None))
+    return {
+        "id": index,
+        "barangay_id": None,
+        "barangay": item["barangay"],
+        "current_cases": item["case_count"],
+        "predicted_cases": item["case_count"],
+        "risk_level": item["risk_level"],
+        "trend": "Historical case total",
+        "latitude": latitude,
+        "longitude": longitude,
+    }
+
+
 def _user_data(user):
     return {
         "id": user.pk,
@@ -51,6 +102,7 @@ def _user_data(user):
         "last_name": user.last_name,
         "contact_number": user.contact_number,
         "address": user.address,
+        "profile_picture": user.profile_picture.url if user.profile_picture else None,
         "role": user.role,
         "account_status": user.account_status,
         "barangay": (
@@ -87,8 +139,13 @@ def register_resident(request):
     if data is None:
         return _error("Invalid JSON body.")
 
-    required = ["first_name", "last_name", "email", "password", "barangay_id"]
+    required = ["first_name", "last_name", "email", "password"]
     missing = {name: "This field is required." for name in required if not str(data.get(name, "")).strip()}
+    # Mobile may use its bundled official barangay list before the locations
+    # endpoint is reachable. In that case the canonical barangay name is the
+    # stable identifier; a database-specific primary key is not required.
+    if not data.get("barangay_id") and not str(data.get("barangay_name", "")).strip():
+        missing["barangay"] = "Please select a barangay."
     if missing:
         return _error("Please complete the required fields.", fields=missing)
     if len(data["password"]) < 8:
@@ -167,19 +224,74 @@ def me(request):
     return JsonResponse({"success": True, "user": _user_data(request.mobile_user)})
 
 
+@csrf_exempt
+@mobile_auth
+@require_http_methods(["POST"])
+def update_profile(request):
+    """Allow a resident to update only their permitted account details."""
+    user = request.mobile_user
+    email = str(request.POST.get("email", "")).strip().lower()
+    contact_number = str(request.POST.get("contact_number", "")).strip()
+    address = str(request.POST.get("address", "")).strip()
+
+    if not email:
+        return _error("Email address is required.", fields={"email": "Required."})
+    if len(contact_number) > 20:
+        return _error("Mobile number must contain at most 20 characters.")
+    if UserAccount.objects.exclude(pk=user.pk).filter(
+        Q(email__iexact=email) | Q(username__iexact=email)
+    ).exists():
+        return _error("An account with this email already exists.", status=409)
+
+    picture = request.FILES.get("profile_picture")
+    if picture:
+        if not (picture.content_type or "").startswith("image/"):
+            return _error("Profile picture must be an image file.")
+        if picture.size > 5 * 1024 * 1024:
+            return _error("Profile picture must be 5 MB or smaller.")
+        user.profile_picture = picture
+
+    # Deliberately do not accept name, role, assigned area, status, or password
+    # in this resident self-service endpoint.
+    user.email = email
+    user.username = email
+    user.contact_number = contact_number
+    user.address = address
+    update_fields = ["email", "username", "contact_number", "address"]
+    if picture:
+        update_fields.append("profile_picture")
+    user.save(update_fields=update_fields)
+    return JsonResponse({"success": True, "user": _user_data(user)})
+
+
 @require_http_methods(["GET"])
 def locations(request):
+    """Return a lightweight barangay list for the mobile registration form."""
     barangays = Barangay.objects.filter(
         barangay_name__in=ILIGAN_BARANGAYS
-    ).prefetch_related("puroks").order_by("barangay_name")
+    ).order_by("barangay_name")
     items = [{
         "id": b.pk,
         "name": b.barangay_name,
         "latitude": float(b.latitude) if b.latitude is not None else None,
         "longitude": float(b.longitude) if b.longitude is not None else None,
-        "puroks": [{"id": p.pk, "name": p.purok_name} for p in b.puroks.all()],
+        "puroks": [],
     } for b in barangays]
     return JsonResponse({"success": True, "barangays": items})
+
+
+@require_http_methods(["GET"])
+def barangay_puroks(request, barangay_id):
+    """Return only the Purok/Sitio records for one selected barangay."""
+    barangay = Barangay.objects.filter(pk=barangay_id).first()
+    if not barangay:
+        return _error("Selected barangay was not found.", status=404)
+    puroks = Purok.objects.filter(barangay=barangay).order_by("purok_name")
+    return JsonResponse({
+        "success": True,
+        "barangay_id": barangay.pk,
+        "puroks": [{"id": p.pk, "name": p.purok_name} for p in puroks],
+    })
 
 
 @require_http_methods(["GET"])
@@ -200,17 +312,11 @@ def hotspots(request):
     # but must not replace the historical map view on the mobile app.
     if request.GET.get('source') == 'historical':
         historical = build_hotspot_data(request)
-        items = [{
-            "id": index,
-            "barangay_id": None,
-            "barangay": item['barangay'],
-            "current_cases": item['case_count'],
-            "predicted_cases": item['case_count'],
-            "risk_level": item['risk_level'],
-            "trend": "Historical case total",
-            "latitude": None,
-            "longitude": None,
-        } for index, item in enumerate(historical['hotspot_data'], start=1)]
+        centers = _official_barangay_centers()
+        items = [
+            _historical_map_item(index, item, centers)
+            for index, item in enumerate(historical['hotspot_data'], start=1)
+        ]
         return JsonResponse({
             "success": True,
             "source": "historical_dataset",
@@ -274,16 +380,11 @@ def hotspots(request):
     # hotspot pages. This is deliberately labeled as historical, not AI output.
     historical = build_hotspot_data(request)
     if historical['hotspot_data']:
-        items = [{
-            "id": index,
-            "barangay_id": None,
-            "barangay": item['barangay'],
-            "current_cases": item['case_count'],
-            "risk_level": item['risk_level'],
-            "trend": "Historical data",
-            "latitude": None,
-            "longitude": None,
-        } for index, item in enumerate(historical['hotspot_data'], start=1)]
+        centers = _official_barangay_centers()
+        items = [
+            _historical_map_item(index, item, centers)
+            for index, item in enumerate(historical['hotspot_data'], start=1)
+        ]
         return JsonResponse({
             "success": True,
             "source": "historical_dataset",

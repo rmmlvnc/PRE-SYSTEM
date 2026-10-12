@@ -10,11 +10,13 @@ urlpatterns = [
     # =====================================================
     path("api/mobile/health/", api.health, name="api_mobile_health"),
     path("api/mobile/locations/", api.locations, name="api_mobile_locations"),
+    path("api/mobile/locations/<int:barangay_id>/puroks/", api.barangay_puroks, name="api_mobile_barangay_puroks"),
     path("api/mobile/boundaries/", api.iligan_barangay_boundaries, name="api_iligan_barangay_boundaries"),
     path("api/mobile/auth/register/", api.register_resident, name="api_mobile_register"),
     path("api/mobile/auth/login/", api.login_mobile, name="api_mobile_login"),
     path("api/mobile/auth/logout/", api.logout_mobile, name="api_mobile_logout"),
     path("api/mobile/me/", api.me, name="api_mobile_me"),
+    path("api/mobile/profile/", api.update_profile, name="api_mobile_update_profile"),
     path("api/mobile/hotspots/", api.hotspots, name="api_mobile_hotspots"),
     path("api/mobile/alerts/", api.alerts, name="api_mobile_alerts"),
     path("api/mobile/notifications/", api.notifications, name="api_mobile_notifications"),

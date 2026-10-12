@@ -4926,7 +4926,24 @@ def create_alert(request):
         barangay=barangay,
         created_by=request.user,
     )
-    messages.success(request, 'Alert published for resident mobile users.')
+    recipients = UserAccount.objects.filter(
+        role='RESIDENT', account_status='APPROVED',
+    )
+    if barangay:
+        recipients = recipients.filter(assigned_barangay=barangay)
+        audience = f'{barangay.barangay_name} residents'
+    else:
+        audience = 'all resident users'
+    for resident in recipients.iterator():
+        notify_user(
+            resident,
+            'ALERT',
+            title,
+            message,
+            created_by=request.user,
+            link='/alerts',
+        )
+    messages.success(request, f'Alert published and sent to {audience}.')
     return redirect('alert_management')
 
 
@@ -4990,6 +5007,14 @@ def forward_environmental_report(request, report_id):
         community_report=report,
         action='FORWARDED',
         details=note,
+    )
+    notify_user(
+        report.resident,
+        'REPORT',
+        f'Your {report.observation_type} report was verified by BHW',
+        'Your concern was verified and forwarded to the City Health Office for final review.',
+        created_by=request.user,
+        link='/(tabs)/report',
     )
     for cho in UserAccount.objects.filter(role='CHO', account_status='APPROVED'):
         notify_user(

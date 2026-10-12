@@ -3,6 +3,7 @@ from datetime import date
 from pathlib import Path
 
 from django.test import RequestFactory, TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.loader import get_template
 
 from .locations import ILIGAN_BARANGAYS, canonicalize_barangay
@@ -19,11 +20,14 @@ class MobileApiTests(TestCase):
     def test_health_and_locations_are_public(self):
         health = self.client.get('/api/mobile/health/')
         locations = self.client.get('/api/mobile/locations/')
+        puroks = self.client.get(f'/api/mobile/locations/{self.barangay.pk}/puroks/')
 
         self.assertEqual(health.status_code, 200)
         self.assertTrue(health.json()['success'])
         self.assertEqual(locations.status_code, 200)
-        self.assertEqual(locations.json()['barangays'][0]['puroks'][0]['name'], 'Test Purok')
+        self.assertEqual(locations.json()['barangays'][0]['puroks'], [])
+        self.assertEqual(puroks.status_code, 200)
+        self.assertEqual(puroks.json()['puroks'][0]['name'], 'Test Purok')
 
     def test_canonical_barangay_scope_is_exactly_44_official_labels(self):
         self.assertEqual(len(ILIGAN_BARANGAYS), 44)
@@ -165,6 +169,102 @@ class MobileApiTests(TestCase):
         self.assertEqual(profile.status_code, 200)
         self.assertEqual(profile.json()['user']['email'], 'ada@example.com')
 
+    def test_historical_hotspots_include_official_boundary_coordinates(self):
+        UserAccount.objects.create_user(
+            username='map@example.com', email='map@example.com',
+            password='safe-password-123', role='RESIDENT',
+            account_status='APPROVED', assigned_barangay=self.barangay,
+        )
+        login = self.client.post(
+            '/api/mobile/auth/login/',
+            data=json.dumps({'email': 'map@example.com', 'password': 'safe-password-123'}),
+            content_type='application/json',
+        )
+        response = self.client.get(
+            '/api/mobile/hotspots/?source=historical',
+            HTTP_AUTHORIZATION=f"Bearer {login.json()['token']}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        hotspots = response.json()['hotspots']
+        self.assertEqual(len(hotspots), 44)
+        self.assertTrue(all(item['latitude'] is not None and item['longitude'] is not None for item in hotspots))
+
+    def test_resident_registration_saves_without_a_purok(self):
+        response = self.client.post(
+            '/api/mobile/auth/register/',
+            data=json.dumps({
+                'first_name': 'No',
+                'last_name': 'Purok',
+                'email': 'no-purok@example.com',
+                'password': 'safe-password-123',
+                'barangay_id': self.barangay.pk,
+                'address': 'Test address',
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 201)
+        resident = UserAccount.objects.get(email='no-purok@example.com')
+        self.assertEqual(resident.role, 'RESIDENT')
+        self.assertEqual(resident.assigned_barangay, self.barangay)
+        self.assertIsNone(resident.assigned_purok)
+
+    def test_resident_can_update_only_allowed_mobile_profile_fields(self):
+        resident = UserAccount.objects.create_user(
+            username='profile@example.com', email='profile@example.com',
+            password='safe-password-123', role='RESIDENT',
+            account_status='APPROVED', assigned_barangay=self.barangay,
+            first_name='Original', last_name='Resident', address='Old address',
+        )
+        login = self.client.post(
+            '/api/mobile/auth/login/',
+            data=json.dumps({'email': 'profile@example.com', 'password': 'safe-password-123'}),
+            content_type='application/json',
+        )
+        token = login.json()['token']
+        response = self.client.post(
+            '/api/mobile/profile/',
+            data={
+                'email': 'updated@example.com',
+                'contact_number': '09171234567',
+                'address': 'Updated address',
+                'profile_picture': SimpleUploadedFile('profile.jpg', b'image-data', content_type='image/jpeg'),
+                # This is intentionally ignored by the self-service endpoint.
+                'first_name': 'Changed',
+            },
+            HTTP_AUTHORIZATION=f'Bearer {token}',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        resident.refresh_from_db()
+        self.assertEqual(resident.email, 'updated@example.com')
+        self.assertEqual(resident.username, 'updated@example.com')
+        self.assertEqual(resident.contact_number, '09171234567')
+        self.assertEqual(resident.address, 'Updated address')
+        self.assertEqual(resident.first_name, 'Original')
+        self.assertTrue(resident.profile_picture.name.startswith('profile_pictures/profile'))
+        self.assertEqual(response.json()['user']['profile_picture'], resident.profile_picture.url)
+
+    def test_resident_registration_accepts_an_official_barangay_name_without_an_id(self):
+        response = self.client.post(
+            '/api/mobile/auth/register/',
+            data=json.dumps({
+                'first_name': 'Name',
+                'last_name': 'Fallback',
+                'email': 'name-fallback@example.com',
+                'password': 'safe-password-123',
+                'barangay_name': 'Abuno',
+            }),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            UserAccount.objects.get(email='name-fallback@example.com').assigned_barangay,
+            self.barangay,
+        )
+
 
 class ChwSuspectedCaseWorkflowTests(TestCase):
     def setUp(self):
@@ -268,6 +368,10 @@ class BhwEnvironmentalReportWorkflowTests(TestCase):
         self.assertEqual(self.in_area.bhw_reviewed_by, self.bhw)
         self.assertTrue(ReportAuditLog.objects.filter(
             community_report=self.in_area, actor=self.bhw, action='FORWARDED'
+        ).exists())
+        self.assertTrue(SystemNotification.objects.filter(
+            recipient=self.resident, notification_type='REPORT',
+            title__contains='verified by BHW',
         ).exists())
 
         denied = self.client.post(
@@ -467,6 +571,29 @@ class NotificationWorkflowTests(TestCase):
         self.client.post('/api/mobile/notifications/', data=json.dumps({'ids': [item['id']]}),
                          content_type='application/json', HTTP_AUTHORIZATION=f'Bearer {token}')
         self.assertTrue(SystemNotification.objects.get(notification_id=item['id']).is_read)
+
+    def test_cho_barangay_alert_notifies_only_residents_in_that_barangay(self):
+        other_barangay = Barangay.objects.create(barangay_name='Dalipuga')
+        other_resident = UserAccount.objects.create_user(
+            username='other_alert_resident', password='safe-password-123',
+            role='RESIDENT', account_status='APPROVED', assigned_barangay=other_barangay,
+        )
+        self.client.force_login(self.cho)
+        response = self.client.post('/cho/alerts/create/', {
+            'title': 'Remove standing water',
+            'message': 'Please remove standing water around your home.',
+            'risk_level': 'HIGH',
+            'barangay_id': self.barangay.pk,
+        })
+
+        self.assertRedirects(response, '/cho/alerts/')
+        self.assertTrue(SystemNotification.objects.filter(
+            recipient=self.resident, notification_type='ALERT',
+            title='Remove standing water',
+        ).exists())
+        self.assertFalse(SystemNotification.objects.filter(
+            recipient=other_resident, notification_type='ALERT',
+        ).exists())
 
     def test_bhw_and_chw_receive_assignment_notifications(self):
         self.client.force_login(self.cho)

@@ -411,6 +411,7 @@ class SystemNotification(models.Model):
     TYPE_CHOICES = [
         ('REPORT', 'Community report'),
         ('REPLY', 'CHO reply'),
+        ('ALERT', 'Barangay health alert'),
         ('ASSIGNMENT', 'Area assignment'),
         ('CASE', 'Case review'),
     ]
