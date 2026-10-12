@@ -7,7 +7,18 @@
   "mae": 1.6345,
   "rmse": 2.3629,
   "r2": 0.244,
+  "persistence_baseline_name": "Persistence (same as most recent month)",
   "persistence_baseline_mae": 1.5121,
+  "persistence_baseline_rmse": 2.5033,
+  "beats_persistence_baseline": false,
+  "mae_change_vs_baseline_pct": -8.1,
+  "deployment_status": "planning_support_only",
+  "blood_type_feature_policy": "Aggregate historical barangay-month feature only; never use for an individual risk decision or diagnosis.",
+  "privacy_protections": [
+    "Use only de-identified barangay-month aggregates.",
+    "Lag aggregate features by one month to prevent future-data leakage.",
+    "Do not include individual blood-type values in forecast outputs."
+  ],
   "features": [
     "barangay",
     "year",
@@ -37,5 +48,5 @@
   "target": "next-month dengue case count",
   "algorithm": "RandomForestRegressor",
   "random_state": 42,
-  "warning": "Decision-support forecast; validate with health professionals."
+  "warning": "Planning-support forecast only; validate with authorized health personnel. It must not be used as a confirmed outbreak or an automatic alert."
 }

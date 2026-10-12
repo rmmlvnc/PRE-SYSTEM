@@ -6,6 +6,7 @@ import csv
 import json
 import re
 
+from datetime import date
 from pathlib import Path
 from collections import Counter
 
@@ -19,6 +20,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.http import require_GET
 
 from .models import (
     UserAccount,
@@ -26,6 +28,10 @@ from .models import (
     Barangay,
     Purok,
     CommunityReport,
+    Alert,
+    SystemNotification,
+    notify_user,
+    log_report_action,
 )
 from .ml.service import prediction_context
 from .locations import ILIGAN_BARANGAYS, canonicalize_barangay
@@ -486,7 +492,7 @@ def cho_dashboard(request):
         for case in cases_data
         if str(
             case.get('year', '')
-        ) == '2026'
+        ) == str(timezone.localdate().year)
     )
 
     # -----------------------------------------------------
@@ -495,6 +501,19 @@ def cho_dashboard(request):
 
     pending_users = UserAccount.objects.filter(
         account_status='PENDING'
+    ).count()
+
+    # CHW reports become official case counts only after the CHO confirms
+    # them. Keep the review queue visible to the final verifier, while the
+    # confirmed count makes the live-data flow explicit on this dashboard.
+    pending_case_reviews = DengueCase.objects.filter(
+        user_account__role='CHW',
+        case_status='Pending',
+    ).count()
+
+    confirmed_web_cases = DengueCase.objects.filter(
+        user_account__role='CHW',
+        case_status='Confirmed',
     ).count()
 
     # -----------------------------------------------------
@@ -562,6 +581,12 @@ def cho_dashboard(request):
 
         'pending_users':
             pending_users,
+
+        'pending_case_reviews':
+            pending_case_reviews,
+
+        'confirmed_web_cases':
+            confirmed_web_cases,
 
         'hotspot_count':
             predicted_hotspots,
@@ -1011,7 +1036,7 @@ def delete_purok(request, purok_id):
 def load_dengue_cases():
 
     """
-    Load all dengue CSV files from:
+    Load official historical CSV cases plus CHO-confirmed web reports from:
 
         BASE_DIR / datasets
 
@@ -1229,6 +1254,33 @@ def load_dengue_cases():
 
             continue
 
+    # CHW submissions remain private workflow records until CHO marks them
+    # Confirmed. Only those CHO-confirmed records are added to the aggregate
+    # views used by dashboards, maps, and resident public summaries.
+    confirmed_cases = DengueCase.objects.filter(
+        case_status='Confirmed',
+        barangay__isnull=False,
+    ).select_related('barangay', 'purok').order_by('dengue_case_id')
+
+    for report in confirmed_cases:
+        barangay = canonicalize_barangay(report.barangay.barangay_name)
+        if not barangay:
+            continue
+        copies = max(1, int(report.case_count or 1))
+        for copy_index in range(copies):
+            cases_data.append({
+                'id': f'confirmed-{report.dengue_case_id}-{copy_index + 1}',
+                'sex': report.patient_sex,
+                'age': report.patient_age,
+                'blood_type': report.patient_blood_type or 'N/A',
+                'address': 'Iligan City',
+                'barangay': barangay,
+                'purok': report.purok.purok_name if report.purok else 'Not specified',
+                'year': str(report.date_reported.year),
+                'date_reported': report.date_reported.isoformat(),
+                'source_file': 'CHO-confirmed web record',
+            })
+
     return cases_data
 
 
@@ -1265,14 +1317,13 @@ def build_report_analytics(selected_year='all'):
 # =========================================================
 
 @role_required('LGU')
+@require_GET
 def lgu_hotspot_map(request):
 
     # Use EXACTLY the same hotspot processing
     # as the CHO hotspot map.
 
     context = build_hotspot_data(request)
-
-
     return render(
         request,
         'lgu_hotspot_map.html',
@@ -1291,7 +1342,6 @@ def hotspot_map(request):
     context = build_hotspot_data(
         request
     )
-
     return render(
         request,
         'hotspot_map.html',
@@ -1317,6 +1367,7 @@ def predictions(request):
 
 
 @role_required('LGU')
+@require_GET
 def lgu_ai_predictions(request):
     """LGU read-only AI prediction page."""
     context = prediction_context(request)
@@ -1342,6 +1393,7 @@ def reports(request):
 
 
 @role_required('LGU')
+@require_GET
 def lgu_reports(request):
     """
     LGU Reports & Analytics
@@ -1357,8 +1409,9 @@ def lgu_reports(request):
 
 
 @role_required('LGU')
+@require_GET
 def lgu_dengue_reports(request):
-    """Search, filter, print, and export LGU read-only dengue case reports."""
+    """Search, filter, print, and export de-identified, city-wide planning reports."""
     all_cases = load_dengue_cases()
     years = sorted(
         {str(case.get('year')) for case in all_cases if case.get('year')},
@@ -1800,8 +1853,12 @@ def dengue_case_bhw(request):
     # ALL CASES IN ASSIGNED BARANGAY
     # -----------------------------------------
 
+    # Suspected/draft reports belong to the CHW -> CHO verification flow and
+    # are not disclosed in the BHW view. BHW sees only recorded outcomes in
+    # the assigned area.
     area_cases = DengueCase.objects.filter(
-        barangay=assigned_barangay
+        barangay=assigned_barangay,
+        case_status__in=['Confirmed', 'Active', 'Recovered'],
     )
 
     # If BHW monitoring should only cover
@@ -1824,9 +1881,7 @@ def dengue_case_bhw(request):
         case_status='Confirmed'
     ).count()
 
-    pending_cases = area_cases.filter(
-        case_status='Pending'
-    ).count()
+    pending_cases = 0
 
     recovered_cases = area_cases.filter(
         case_status='Recovered'
@@ -1838,20 +1893,16 @@ def dengue_case_bhw(request):
         confirmed_cases
     )
 
-    # -----------------------------------------
-    # REPORTS SUBMITTED BY THIS BHW
-    # -----------------------------------------
-
-    my_cases = DengueCase.objects.filter(
-        user_account=request.user
-    ).order_by(
+    # BHWs have view-only access to confirmed/active case information in
+    # their assigned area. CHO remains the final authority for case records.
+    area_cases = area_cases.order_by(
         '-date_reported',
         '-dengue_case_id'
     )
 
     context = {
 
-        'dengue_cases': my_cases,
+        'dengue_cases': area_cases,
 
         'assigned_barangay':
             assigned_barangay,
@@ -2167,6 +2218,41 @@ def build_hotspot_data(request):
                 f'{e}'
             )
 
+    # Add only CHO-confirmed workflow cases to the live aggregate. Pending,
+    # draft, and rejected reports must never alter official totals or maps.
+    confirmed_web_cases = list(
+        DengueCase.objects.filter(
+            case_status='Confirmed',
+            barangay__isnull=False,
+        ).select_related('barangay', 'purok')
+    )
+    for report in confirmed_web_cases:
+        barangay = canonicalize_barangay(report.barangay.barangay_name)
+        if not barangay:
+            continue
+        year = str(report.date_reported.year)
+        purok = report.purok.purok_name if report.purok else 'Not specified'
+        case_units = max(1, int(report.case_count or 1))
+        barangay_key = normalize_name(barangay)
+        all_years.add(year)
+        total_dataset_cases += case_units
+        if barangay_key not in barangays:
+            barangays[barangay_key] = {
+                'barangay': barangay,
+                'city': 'Iligan City',
+                'cases': 0,
+                'puroks': Counter(),
+                'years': Counter(),
+            }
+        barangays[barangay_key]['cases'] += case_units
+        barangays[barangay_key]['puroks'][purok] += case_units
+        barangays[barangay_key]['years'][year] += case_units
+
+    # Do not silently render an arbitrary, empty future year as a historical
+    # map. The selected value must exist in the loaded historical dataset.
+    if selected_year.lower() != 'all' and selected_year not in all_years:
+        selected_year = 'all'
+
     # =====================================================
     # FILTER BY YEAR
     # =====================================================
@@ -2288,6 +2374,24 @@ def build_hotspot_data(request):
                     f'Error reading {dataset_path.name}: {e}'
                 )
 
+        # The CSV loop above only contains imported historical records. Add
+        # confirmed web records for the selected year so popup purok counts
+        # agree with the polygon's displayed case total.
+        for report in confirmed_web_cases:
+            if str(report.date_reported.year) != str(selected_year):
+                continue
+            barangay = canonicalize_barangay(report.barangay.barangay_name)
+            if not barangay:
+                continue
+            barangay_key = normalize_name(barangay)
+            if barangay_key not in filtered_barangays:
+                continue
+            purok = report.purok.purok_name if report.purok else 'Not specified'
+            filtered_barangays[barangay_key]['puroks'][purok] += max(
+                1,
+                int(report.case_count or 1),
+            )
+
         barangays = filtered_barangays
 
     # Include all official areas on every role's hotspot map, even when a
@@ -2317,17 +2421,6 @@ def build_hotspot_data(request):
         risk_level = get_risk(
             case_count
         )
-
-        # =============================================
-        # RISK FILTER
-        # =============================================
-
-        if (
-            selected_risk != 'all'
-            and risk_level.lower()
-            != selected_risk
-        ):
-            continue
 
         # =============================================
         # PUROK DATA
@@ -2446,6 +2539,21 @@ def build_hotspot_data(request):
         hotspot_data
     )
 
+    # This is intentionally separate from the number of barangays shown on
+    # the historical map. A barangay is BHW-covered only when an approved
+    # BHW account has been assigned to it by the CHO.
+    assigned_bhws = UserAccount.objects.filter(
+        role='BHW',
+        account_status='APPROVED',
+        assigned_barangay__isnull=False,
+    )
+
+    bhw_covered_barangays = assigned_bhws.values(
+        'assigned_barangay_id'
+    ).distinct().count()
+
+    assigned_bhw_workers = assigned_bhws.count()
+
     high_risk_areas = sum(
         1
         for item in hotspot_data
@@ -2518,6 +2626,17 @@ def build_hotspot_data(request):
     # CONTEXT
     # =====================================================
 
+    ordered_years = sorted(all_years, reverse=True)
+    chronological_years = sorted(all_years, key=lambda value: int(value) if str(value).isdigit() else str(value))
+    historical_case_period = (
+        f'{chronological_years[0]}–{chronological_years[-1]}'
+        if len(chronological_years) > 1 else (chronological_years[0] if chronological_years else 'No historical records')
+    )
+    selected_year_label = (
+        'All available historical years'
+        if selected_year.lower() == 'all' else f'Historical year {selected_year}'
+    )
+
     return {
 
         'hotspot_data':
@@ -2538,6 +2657,12 @@ def build_hotspot_data(request):
         'total_barangays':
             monitored_barangays,
 
+        'bhw_covered_barangays':
+            bhw_covered_barangays,
+
+        'assigned_bhw_workers':
+            assigned_bhw_workers,
+
         'high_risk_areas':
             high_risk_areas,
 
@@ -2550,23 +2675,20 @@ def build_hotspot_data(request):
         'predicted_hotspots':
             predicted_hotspots,
 
-        'years':
-            sorted(
-                all_years,
-                reverse=True
-            ),
+        'years': ordered_years,
 
-        'available_years':
-            sorted(
-                all_years,
-                reverse=True
-            ),
+        'available_years': ordered_years,
 
         'selected_year':
             selected_year,
 
         'selected_risk':
             selected_risk,
+
+        # Historical map metadata: never use the forecast period here.
+        'map_data_source': 'Historical dengue case records',
+        'historical_case_period': historical_case_period,
+        'selected_year_label': selected_year_label,
 
         'dataset_count':
             len(dataset_files),
@@ -2595,8 +2717,185 @@ def chw_dashboard(request):
 
     return render(
         request,
-        'chw_dashboard.html'
+        'chw_dashboard.html',
+        {
+            'total_cases': DengueCase.objects.filter(user_account=request.user).count(),
+            'pending_cases': DengueCase.objects.filter(user_account=request.user, case_status='Pending').count(),
+            'recent_cases': DengueCase.objects.filter(user_account=request.user).select_related('barangay', 'purok').order_by('-date_reported')[:5],
+        }
     )
+
+
+def _render_chw_case_reports(request, form_case=None, form_data=None):
+    reports = DengueCase.objects.filter(
+        user_account=request.user,
+    ).select_related('barangay', 'purok', 'reviewed_by').prefetch_related('audit_logs__actor').order_by('-date_reported', '-dengue_case_id')
+    form_values = {
+        'patient_age': '', 'patient_sex': '', 'patient_blood_type': '',
+        'date_reported': '', 'barangay_id': '', 'purok_id': '',
+        'location_details': '', 'symptoms': '', 'remarks': '',
+    }
+    if form_case:
+        form_values.update({
+            'patient_age': form_case.patient_age,
+            'patient_sex': form_case.patient_sex,
+            'patient_blood_type': form_case.patient_blood_type,
+            'date_reported': form_case.date_reported.isoformat(),
+            'barangay_id': form_case.barangay_id or '',
+            'purok_id': form_case.purok_id or '',
+            'location_details': form_case.location_details,
+            'symptoms': form_case.symptoms,
+            'remarks': form_case.remarks,
+        })
+    if form_data:
+        form_values.update({key: form_data.get(key, value) for key, value in form_values.items()})
+    return render(request, 'chw_case_reports.html', {
+        'reports': reports,
+        'barangays': Barangay.objects.order_by('barangay_name'),
+        'puroks': Purok.objects.select_related('barangay').order_by('barangay__barangay_name', 'purok_name'),
+        'form_case': form_case,
+        'form_values': form_values,
+    })
+
+
+def _save_chw_case(request, case=None):
+    """Save a CHW draft or send a complete suspected case to CHO."""
+    action = request.POST.get('action')
+    if action not in {'draft', 'submit'}:
+        return None, 'Choose whether to save a draft or send the report to CHO.'
+
+    barangay = get_object_or_404(Barangay, pk=request.POST.get('barangay_id'))
+    purok_id = request.POST.get('purok_id')
+    purok = Purok.objects.filter(pk=purok_id, barangay=barangay).first() if purok_id else None
+    if purok_id and purok is None:
+        return None, 'Choose a purok that belongs to the selected barangay.'
+
+    try:
+        patient_age = int(request.POST.get('patient_age', ''))
+        reported_on = date.fromisoformat(request.POST.get('date_reported', ''))
+    except (TypeError, ValueError):
+        return None, 'Enter a valid patient age and report date.'
+    if patient_age < 0 or patient_age > 130:
+        return None, 'Patient age must be between 0 and 130.'
+
+    patient_sex = request.POST.get('patient_sex', '').strip()
+    symptoms = request.POST.get('symptoms', '').strip()
+    location_details = request.POST.get('location_details', '').strip()
+    if not patient_sex:
+        return None, 'Select the patient sex.'
+    if action == 'submit' and (not symptoms or not location_details):
+        return None, 'Symptoms and exact location details are required before sending to CHO.'
+
+    is_new = case is None
+    report = case or DengueCase(user_account=request.user)
+    report.barangay = barangay
+    report.purok = purok
+    report.patient_age = patient_age
+    report.patient_sex = patient_sex[:20]
+    report.patient_blood_type = request.POST.get('patient_blood_type', '').strip().upper()[:5]
+    report.date_reported = reported_on
+    report.symptoms = symptoms
+    report.location_details = location_details
+    report.remarks = request.POST.get('remarks', '').strip()
+    report.case_status = 'Pending' if action == 'submit' else 'Draft'
+    report.reviewed_by = None
+    report.reviewed_at = None
+    report.cho_review_note = ''
+    report.save()
+    audit_action = 'CREATED' if is_new else 'EDITED'
+    if action == 'submit':
+        audit_action = 'SUBMITTED'
+    log_report_action(
+        actor=request.user,
+        dengue_case=report,
+        action=audit_action,
+        details='CHW submitted the suspected case to CHO.' if action == 'submit' else 'CHW saved a suspected-case draft.',
+    )
+    return report, None
+
+
+@role_required('CHW')
+def chw_case_reports(request):
+    if request.method == 'POST':
+        report, error = _save_chw_case(request)
+        if error:
+            messages.error(request, error)
+            return _render_chw_case_reports(request, form_data=request.POST)
+        if report.case_status == 'Pending':
+            messages.success(request, 'Suspected case validated and sent to CHO for final verification.')
+        else:
+            messages.success(request, 'Suspected case saved as a draft. Review it before sending to CHO.')
+        return redirect('chw_case_reports')
+
+    editing_case = None
+    edit_id = request.GET.get('edit')
+    if edit_id:
+        editing_case = get_object_or_404(DengueCase, pk=edit_id, user_account=request.user, case_status='Draft')
+    return _render_chw_case_reports(request, form_case=editing_case)
+
+
+@role_required('CHW')
+def update_chw_case_report(request, case_id):
+    if request.method != 'POST':
+        return redirect('chw_case_reports')
+    report = get_object_or_404(DengueCase, pk=case_id, user_account=request.user, case_status='Draft')
+    saved, error = _save_chw_case(request, case=report)
+    if error:
+        messages.error(request, error)
+        return _render_chw_case_reports(request, form_case=report, form_data=request.POST)
+    if saved.case_status == 'Pending':
+        messages.success(request, 'Suspected case validated and sent to CHO for final verification.')
+    else:
+        messages.success(request, 'Draft updated.')
+    return redirect('chw_case_reports')
+
+
+@role_required('CHO')
+def cho_suspected_case_reviews(request):
+    reports = DengueCase.objects.filter(
+        user_account__role='CHW',
+        case_status='Pending',
+    ).select_related('user_account', 'barangay', 'purok').prefetch_related('audit_logs__actor').order_by('date_reported', 'dengue_case_id')
+    return render(request, 'cho_suspected_case_reviews.html', {'reports': reports})
+
+
+@role_required('CHO')
+def review_chw_case_report(request, case_id):
+    if request.method != 'POST':
+        return redirect('cho_suspected_case_reviews')
+    report = get_object_or_404(DengueCase, pk=case_id, user_account__role='CHW', case_status='Pending')
+    decision = request.POST.get('decision')
+    note = request.POST.get('cho_review_note', '').strip()
+    if decision not in {'Confirmed', 'Rejected'} or not note:
+        messages.error(request, 'Choose Confirmed or Rejected and provide a CHO review note.')
+        return redirect('cho_suspected_case_reviews')
+    report.case_status = decision
+    report.cho_review_note = note
+    report.reviewed_by = request.user
+    report.reviewed_at = timezone.now()
+    report.save(update_fields=['case_status', 'cho_review_note', 'reviewed_by', 'reviewed_at'])
+    log_report_action(
+        actor=request.user,
+        dengue_case=report,
+        action='VERIFIED' if decision == 'Confirmed' else 'REJECTED',
+        details=note,
+    )
+    notify_user(
+        report.user_account,
+        'CASE',
+        f'Suspected case #{report.dengue_case_id} {decision.lower()}',
+        f'CHO review: {note}',
+        created_by=request.user,
+        link='/chw/suspected-cases/',
+    )
+    if decision == 'Confirmed':
+        messages.success(
+            request,
+            f'Suspected case #{report.dengue_case_id} was confirmed by CHO and is now included in live dashboard and hotspot-map totals.'
+        )
+    else:
+        messages.success(request, f'Suspected case #{report.dengue_case_id} was rejected by CHO.')
+    return redirect('cho_suspected_case_reviews')
 
 
 # =========================================================
@@ -2827,33 +3126,30 @@ def bhw_dashboard(request):
 
 
     # =====================================================
-    # REPORTS SUBMITTED BY THIS BHW
+    # RESIDENT ENVIRONMENTAL REPORTS IN THIS BHW'S ASSIGNED AREA
+    #
+    # BHWs do not create, confirm, or reject dengue case records. They
+    # verify resident environmental concerns in their assigned service area
+    # and forward verified concerns to the CHO for the final decision.
     # =====================================================
 
-    submitted_queryset = (
-
-        DengueCase.objects
-
-        .filter(
-            user_account=request.user
-        )
-
-        .order_by(
-            '-date_reported',
-            '-dengue_case_id'
-        )
-
+    area_environmental_reports = _bhw_environmental_report_queryset(
+        request.user
+    ).select_related(
+        'resident', 'barangay', 'purok', 'bhw_reviewed_by'
     )
 
+    pending_environmental_reports = area_environmental_reports.filter(
+        status='PENDING'
+    ).count()
 
-    submitted_reports = (
-        submitted_queryset.count()
-    )
+    forwarded_environmental_reports = area_environmental_reports.filter(
+        status='FORWARDED'
+    ).count()
 
-
-    recent_cases = (
-        submitted_queryset[:5]
-    )
+    recent_environmental_reports = area_environmental_reports.order_by(
+        '-submitted_at'
+    )[:5]
 
 
     # =====================================================
@@ -2874,8 +3170,11 @@ def bhw_dashboard(request):
         'total_cases':
             total_cases,
 
-        'submitted_reports':
-            submitted_reports,
+        'pending_environmental_reports':
+            pending_environmental_reports,
+
+        'forwarded_environmental_reports':
+            forwarded_environmental_reports,
 
         'current_risk':
             current_risk,
@@ -2886,8 +3185,8 @@ def bhw_dashboard(request):
         'assigned_purok_data':
             assigned_purok_data,
 
-        'recent_cases':
-            recent_cases,
+        'recent_environmental_reports':
+            recent_environmental_reports,
 
         'assigned_hotspot':
             assigned_hotspot,
@@ -3146,6 +3445,7 @@ def bhw_hotspot_information(request):
 # =========================================================
 
 @role_required('LGU')
+@require_GET
 def lgu_dashboard(request):
 
     cases_data = load_dengue_cases()
@@ -3434,6 +3734,7 @@ def lgu_profile(request):
 # =========================================================
 
 @role_required('LGU')
+@require_GET
 def lgu_risk_levels(request):
 
     """
@@ -3617,6 +3918,7 @@ def lgu_risk_levels(request):
 # =========================================================
 
 @role_required('LGU')
+@require_GET
 def city_wide_monitoring(request):
 
     """
@@ -4495,6 +4797,23 @@ def pending_requests(request):
 
 
 # =========================================================
+# NOTIFICATION CENTER
+# =========================================================
+
+@login_required(login_url='login')
+def notification_center(request):
+    notifications = SystemNotification.objects.filter(recipient=request.user)
+    if request.method == 'POST':
+        notifications.filter(is_read=False).update(is_read=True, read_at=timezone.now())
+        messages.success(request, 'Notifications marked as read.')
+        return redirect('notification_center')
+    return render(request, 'notification_center.html', {
+        'notifications': notifications[:100],
+        'unread_count': notifications.filter(is_read=False).count(),
+    })
+
+
+# =========================================================
 # CHO USER MANAGEMENT
 # CHO ONLY
 # =========================================================
@@ -4523,10 +4842,10 @@ def user_management(request):
 
 @role_required('CHO')
 def community_reports_review(request):
-    """CHO review queue for resident observations from the mobile app."""
+    """Final CHO queue for resident reports verified and forwarded by BHWs."""
     reports = CommunityReport.objects.select_related(
-        'resident', 'barangay', 'purok', 'reviewed_by'
-    ).order_by('status', '-submitted_at')
+        'resident', 'barangay', 'purok', 'reviewed_by', 'bhw_reviewed_by'
+    ).prefetch_related('audit_logs__actor').filter(status='FORWARDED').order_by('-bhw_reviewed_at', '-submitted_at')
     return render(request, 'community_reports_review.html', {'reports': reports})
 
 
@@ -4535,7 +4854,7 @@ def review_community_report(request, report_id):
     if request.method != 'POST':
         return redirect('community_reports_review')
 
-    report = get_object_or_404(CommunityReport, pk=report_id)
+    report = get_object_or_404(CommunityReport, pk=report_id, status='FORWARDED')
     status = request.POST.get('status', '').upper()
     response = request.POST.get('staff_response', '').strip()
     if status not in {'VERIFIED', 'REJECTED'} or not response:
@@ -4547,8 +4866,142 @@ def review_community_report(request, report_id):
     report.reviewed_by = request.user
     report.reviewed_at = timezone.now()
     report.save(update_fields=['status', 'staff_response', 'reviewed_by', 'reviewed_at'])
+    log_report_action(
+        actor=request.user,
+        community_report=report,
+        action=status,
+        details=response,
+    )
+    notify_user(
+        report.resident,
+        'REPLY',
+        f'CHO replied to your {report.observation_type} report',
+        response,
+        created_by=request.user,
+        link='/(tabs)/report',
+    )
     messages.success(request, 'Resident report reviewed and response saved.')
     return redirect('community_reports_review')
+
+
+# =========================================================
+# CHO ALERT AUTHORITY
+# =========================================================
+
+@role_required('CHO')
+def alert_management(request):
+    """CHO is the only role that can publish, withdraw, or re-activate alerts."""
+    alerts = Alert.objects.select_related('barangay', 'created_by').order_by(
+        '-is_active', '-created_at'
+    )
+    barangays = Barangay.objects.order_by('barangay_name')
+    return render(request, 'alert_management.html', {
+        'alerts': alerts,
+        'barangays': barangays,
+        'risk_choices': Alert.RISK_CHOICES,
+    })
+
+
+@role_required('CHO')
+def create_alert(request):
+    if request.method != 'POST':
+        return redirect('alert_management')
+
+    title = request.POST.get('title', '').strip()
+    message = request.POST.get('message', '').strip()
+    risk_level = request.POST.get('risk_level', '').upper()
+    barangay_id = request.POST.get('barangay_id', '').strip()
+    valid_levels = {value for value, _label in Alert.RISK_CHOICES}
+    if not title or not message or risk_level not in valid_levels:
+        messages.error(request, 'Provide an alert title, message, and valid risk level.')
+        return redirect('alert_management')
+
+    barangay = None
+    if barangay_id:
+        barangay = get_object_or_404(Barangay, pk=barangay_id)
+    Alert.objects.create(
+        title=title,
+        message=message,
+        risk_level=risk_level,
+        barangay=barangay,
+        created_by=request.user,
+    )
+    messages.success(request, 'Alert published for resident mobile users.')
+    return redirect('alert_management')
+
+
+@role_required('CHO')
+def toggle_alert(request, alert_id):
+    if request.method != 'POST':
+        return redirect('alert_management')
+    alert = get_object_or_404(Alert, pk=alert_id)
+    alert.is_active = not alert.is_active
+    alert.save(update_fields=['is_active'])
+    messages.success(request, 'Alert activated.' if alert.is_active else 'Alert withdrawn.')
+    return redirect('alert_management')
+
+
+def _bhw_environmental_report_queryset(user):
+    """Return only reports inside the BHW's explicitly assigned service area."""
+    assigned_barangay = getattr(user, 'assigned_barangay', None)
+    if not assigned_barangay:
+        return CommunityReport.objects.none()
+    reports = CommunityReport.objects.filter(barangay=assigned_barangay)
+    assigned_purok = getattr(user, 'assigned_purok', None)
+    if assigned_purok:
+        reports = reports.filter(purok=assigned_purok)
+    return reports
+
+
+@role_required('BHW')
+def bhw_environmental_reports(request):
+    reports = _bhw_environmental_report_queryset(request.user).select_related(
+        'resident', 'barangay', 'purok', 'bhw_reviewed_by'
+    ).prefetch_related('audit_logs__actor').filter(status__in=['PENDING', 'FORWARDED']).order_by('status', '-submitted_at')
+    return render(request, 'bhw_environmental_reports.html', {
+        'reports': reports,
+        'assigned_barangay': request.user.assigned_barangay,
+        'assigned_purok': request.user.assigned_purok,
+    })
+
+
+@role_required('BHW')
+def forward_environmental_report(request, report_id):
+    if request.method != 'POST':
+        return redirect('bhw_environmental_reports')
+    report = get_object_or_404(
+        _bhw_environmental_report_queryset(request.user),
+        pk=report_id,
+        status='PENDING',
+    )
+    note = request.POST.get('bhw_review_note', '').strip()
+    if not note:
+        messages.error(request, 'Provide a BHW verification note before forwarding the concern to CHO.')
+        return redirect('bhw_environmental_reports')
+    report.status = 'FORWARDED'
+    report.bhw_review_note = note
+    report.bhw_reviewed_by = request.user
+    report.bhw_reviewed_at = timezone.now()
+    report.save(update_fields=[
+        'status', 'bhw_review_note', 'bhw_reviewed_by', 'bhw_reviewed_at',
+    ])
+    log_report_action(
+        actor=request.user,
+        community_report=report,
+        action='FORWARDED',
+        details=note,
+    )
+    for cho in UserAccount.objects.filter(role='CHO', account_status='APPROVED'):
+        notify_user(
+            cho,
+            'REPORT',
+            f'BHW forwarded a {report.observation_type} concern',
+            f'{report.barangay.barangay_name}: {note}',
+            created_by=request.user,
+            link='/cho/community-reports/',
+        )
+    messages.success(request, 'Environmental concern verified and forwarded to CHO for final review.')
+    return redirect('bhw_environmental_reports')
 
 
 @role_required('CHO')
@@ -4565,7 +5018,7 @@ def bhw_assignments(request):
     bhw_users = (
         UserAccount.objects
         .filter(
-            role='BHW',
+            role__in=['BHW', 'CHW'],
             account_status='APPROVED'
         )
         .select_related(
@@ -4671,7 +5124,7 @@ def assign_bhw_area(request, user_id):
     bhw = get_object_or_404(
         UserAccount,
         id=user_id,
-        role='BHW'
+        role__in=['BHW', 'CHW']
     )
 
     # -----------------------------------------------------
@@ -4769,6 +5222,18 @@ def assign_bhw_area(request, user_id):
         ]
     )
 
+    assigned_area = barangay.barangay_name
+    if purok:
+        assigned_area = f'{assigned_area} — {purok.purok_name}'
+    notify_user(
+        bhw,
+        'ASSIGNMENT',
+        'New monitoring-area assignment',
+        f'CHO assigned you to {assigned_area}.',
+        created_by=request.user,
+        link='/dashboard/',
+    )
+
     # -----------------------------------------------------
     # SUCCESS MESSAGE
     # -----------------------------------------------------
@@ -4826,7 +5291,7 @@ def remove_bhw_assignment(request, user_id):
     bhw = get_object_or_404(
         UserAccount,
         id=user_id,
-        role='BHW'
+        role__in=['BHW', 'CHW']
     )
 
     # -----------------------------------------------------
@@ -4841,6 +5306,15 @@ def remove_bhw_assignment(request, user_id):
             'assigned_barangay',
             'assigned_purok',
         ]
+    )
+
+    notify_user(
+        bhw,
+        'ASSIGNMENT',
+        'Monitoring-area assignment removed',
+        'CHO removed your assigned barangay/purok monitoring area.',
+        created_by=request.user,
+        link='/dashboard/',
     )
 
     messages.success(

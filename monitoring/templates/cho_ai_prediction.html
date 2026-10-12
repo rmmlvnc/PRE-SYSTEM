@@ -528,6 +528,30 @@
             font-size: 12px;
         }
 
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .workflow-link {
+            display: block;
+            padding: 14px;
+            border: 1px solid #cfe9e4;
+            border-radius: 10px;
+            color: #115e59;
+            background: #f0fdfa;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .workflow-link small {
+            display: block;
+            margin-top: 5px;
+            color: #475569;
+            font-weight: 400;
+        }
+
         .risk-name {
             display: flex;
             align-items: center;
@@ -812,7 +836,8 @@
 
             .profile-grid,
             .weather-grid,
-            .metric-grid {
+            .metric-grid,
+            .workflow-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -1097,6 +1122,49 @@
         </section>
 
 
+        <section class="box mb-3">
+
+            <div class="box-head">
+                <h5><i class="fa-solid fa-list-check me-2 text-success"></i>Decision-support priorities</h5>
+                <p>Ranked planning information for {{ forecast_period }}; validate before action.</p>
+            </div>
+
+            <div class="box-body risk-guide">
+                <div class="metric-grid">
+                    <div class="metric-item"><span>Forecast total</span><strong>{{ planning_summary.total_predicted_cases|default:"0" }}</strong></div>
+                    <div class="metric-item"><span>Increasing barangays</span><strong>{{ planning_summary.increasing_barangays|default:"0" }}</strong></div>
+                    <div class="metric-item"><span>High / critical priorities</span><strong>{{ planning_summary.priority_barangays|default:"0" }}</strong></div>
+                </div>
+
+                {% for row in priority_barangays %}
+                    <div class="risk-row">
+                        <div>
+                            <strong>{{ forloop.counter }}. {{ row.barangay }}</strong>
+                            <div class="source mt-1">Historical month: {{ row.current_cases }} cases · Forecast: {{ row.predicted_cases }} · {{ row.trend }}. {{ row.recommendation }}</div>
+                        </div>
+                        <span class="risk-badge badge-{{ row.risk_level|lower }}">{{ row.risk_level }}</span>
+                    </div>
+                {% empty %}
+                    <p class="muted mb-0">No forecast priorities are available.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+
+        <section class="box mb-3">
+            <div class="box-head">
+                <h5><i class="fa-solid fa-clipboard-check me-2 text-success"></i>CHO validation workflow</h5>
+                <p>Use the forecast to decide what needs review; use verified reports and field checks to decide action.</p>
+            </div>
+            <div class="box-body workflow-grid">
+                <a class="workflow-link" href="{% url 'cho_suspected_case_reviews' %}"><i class="fa-solid fa-user-doctor"></i> Review CHW suspected cases<small>Confirm or reject submitted cases using CHO procedures.</small></a>
+                <a class="workflow-link" href="{% url 'community_reports_review' %}"><i class="fa-solid fa-comments"></i> Review resident / BHW reports<small>Validate environmental concerns before escalation.</small></a>
+                <a class="workflow-link" href="{% url 'bhw_assignments' %}"><i class="fa-solid fa-people-group"></i> Assign field follow-up<small>Assign BHW or CHW coverage for priority areas.</small></a>
+                <a class="workflow-link" href="{% url 'alert_management' %}"><i class="fa-solid fa-bell"></i> Manage health alerts<small>Create alerts only after CHO review and verification.</small></a>
+            </div>
+        </section>
+
+
         <!-- =========================
              HISTORICAL PROFILE
         ========================= -->
@@ -1139,10 +1207,10 @@
 
                 <div class="profile-card">
 
-                    <span>Common blood type</span>
+                    <span>Most common historical blood type</span>
 
                     <strong>
-                        {{ demographic_summary.common_blood_type|default:"N/A" }}
+                        {{ demographic_summary.common_blood_type|default:"Not displayed" }}
                     </strong>
 
                 </div>
@@ -1181,6 +1249,25 @@
                 </div>
 
             </div>
+
+            <p class="source px-3 pb-3 mb-0">
+                <strong>Privacy and clinical limitation:</strong>
+                {{ blood_type_feature_notice }}
+            </p>
+
+            {% if blood_type_by_year %}
+                <div class="box-body pt-0">
+                    <strong>Historical aggregate blood type by year</strong>
+                    <div class="profile-grid mt-2">
+                        {% for item in blood_type_by_year %}
+                            <div class="profile-card">
+                                <span>{{ item.year }} · {{ item.record_count }} aggregate records</span>
+                                <strong>{{ item.common_blood_type }} ({{ item.common_blood_type_share }}%)</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
 
         </section>
 
@@ -1558,6 +1645,26 @@
 
                     </div>
 
+                    <div class="metric-item">
+
+                        <span>Persistence Baseline MAE</span>
+
+                        <strong>
+                            {{ model_evaluation.baseline_mae|default:"N/A" }}
+                        </strong>
+
+                    </div>
+
+                    <div class="metric-item">
+
+                        <span>Persistence Baseline RMSE</span>
+
+                        <strong>
+                            {{ model_evaluation.baseline_rmse|default:"N/A" }}
+                        </strong>
+
+                    </div>
+
 
                     <div class="metric-item">
 
@@ -1580,13 +1687,18 @@
                     · Validation starts:
                     {{ model_metrics.validation_start|default:"N/A" }}
 
-                    · Persistence baseline MAE:
-                    {{ model_metrics.persistence_baseline_mae|default:"N/A" }}
+                    · Baseline: {{ model_evaluation.baseline_name }}
 
                     <br>
 
-                    Lower MAE is better. Model performance should be
-                    interpreted together with the validation results.
+                    Lower MAE/RMSE is better. {{ model_evaluation.comparison_message }}
+
+                    <br><br>
+
+                    <strong>Use limitation:</strong>
+                    Forecasts are planning support only. They are not confirmed
+                    dengue cases, outbreak declarations, or automatic alerts.
+                    CHO validation is required before any public-health action.
 
                 </p>
 
@@ -1766,13 +1878,9 @@
 
                                 {{ row.common_sex|default:"N/A" }}
 
-                                ·
-
-                                {{ row.common_blood_type|default:"N/A" }}
-
                                 <br>
 
-                                <span class="muted">Training feature: {{ row.training_blood_type|default:"N/A" }} historical share ({{ row.training_blood_type_share|default:"0" }}%)</span>
+                                <span class="muted">Historical aggregate blood type: {{ row.historical_common_blood_type|default:"Not displayed" }}. Not an individual risk or diagnosis.</span>
 
                                 <br>
 

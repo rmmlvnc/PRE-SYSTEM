@@ -695,6 +695,73 @@
             </div>
 
 
+            <div class="section-card">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <h5>
+                            Verified case workflow
+                        </h5>
+
+                        <p>
+                            CHW suspected-case reports remain out of public totals until a CHO completes final verification.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row g-3">
+
+                    <div class="col-lg-6">
+
+                        <a
+                            href="{% url 'cho_suspected_case_reviews' %}"
+                            class="action-card"
+                        >
+
+                            <i class="fa-solid fa-clipboard-check"></i>
+
+                            <strong>
+                                {{ pending_case_reviews|default:"0" }} case{{ pending_case_reviews|pluralize }} awaiting CHO review
+                            </strong>
+
+                            <small>
+                                Confirm valid reports to add their aggregate case count to live dashboards and hotspot maps, or reject them with a review note.
+                            </small>
+
+                        </a>
+
+                    </div>
+
+
+                    <div class="col-lg-6">
+
+                        <div class="action-card" style="cursor:default;">
+
+                            <i class="fa-solid fa-chart-line"></i>
+
+                            <strong>
+                                {{ confirmed_web_cases|default:"0" }} CHO-confirmed web case{{ confirmed_web_cases|pluralize }} in live aggregates
+                            </strong>
+
+                            <small>
+                                Residents see only barangay-level totals on the mobile hotspot view. AI retraining remains a separate, controlled dataset and model update.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
             <!-- ==========================================
                  QUICK ACTIONS
             =========================================== -->
@@ -746,6 +813,34 @@
 
                                 Review, validate, and monitor
                                 reported dengue cases.
+
+                            </small>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- CHW CASE REVIEWS -->
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <a
+                            href="{% url 'cho_suspected_case_reviews' %}"
+                            class="action-card"
+                        >
+
+                            <i class="fa-solid fa-clipboard-check"></i>
+
+
+                            <strong>
+                                CHW Case Verification
+                            </strong>
+
+
+                            <small>
+
+                                Confirm or reject suspected CHW case reports before they become official monitoring data.
 
                             </small>
 
@@ -839,37 +934,6 @@
 
                                 Generate and review dengue
                                 monitoring reports.
-
-                            </small>
-
-                        </a>
-
-                    </div>
-
-
-                    <!-- USER MANAGEMENT -->
-
-                    <div class="col-lg-4 col-md-6">
-
-                        <a
-                            href="{% url 'user_management' %}"
-                            class="action-card"
-                        >
-
-                            <i
-                                class="fa-solid fa-users-gear"
-                            ></i>
-
-
-                            <strong>
-                                User Management
-                            </strong>
-
-
-                            <small>
-
-                                Approve or reject registration
-                                requests from authorized personnel.
 
                             </small>
 

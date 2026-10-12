@@ -59,22 +59,55 @@ def train(csv_path: Path, output_path: Path, metrics_path: Path) -> dict:
     evaluation_pipeline.fit(train_data[FEATURES], train_data['target_next_cases'])
     predicted = np.maximum(0, evaluation_pipeline.predict(test_data[FEATURES]))
     actual = test_data['target_next_cases']
+    # Persistence is the minimum useful baseline for a next-month forecast:
+    # predict that the next monthly total will equal this month's total.
+    # A model should not be presented as an improvement unless it beats this
+    # baseline on the same chronological holdout period.
     baseline = test_data['case_count'].clip(lower=0)
+    model_mae = float(mean_absolute_error(actual, predicted))
+    model_rmse = float(mean_squared_error(actual, predicted) ** 0.5)
+    baseline_mae = float(mean_absolute_error(actual, baseline))
+    baseline_rmse = float(mean_squared_error(actual, baseline) ** 0.5)
+    beats_persistence = model_mae < baseline_mae
+    mae_change_pct = (
+        ((baseline_mae - model_mae) / baseline_mae) * 100
+        if baseline_mae > 0 else None
+    )
     metrics = {
         'dataset_rows': int(len(pd.read_csv(csv_path))),
         'usable_rows': int(len(data)),
         'training_rows': int(len(train_data)),
         'test_rows': int(len(test_data)),
         'validation_start': pd.Timestamp(cutoff).strftime('%Y-%m'),
-        'mae': round(float(mean_absolute_error(actual, predicted)), 4),
-        'rmse': round(float(mean_squared_error(actual, predicted) ** 0.5), 4),
+        'mae': round(model_mae, 4),
+        'rmse': round(model_rmse, 4),
         'r2': round(float(r2_score(actual, predicted)), 4) if len(actual) > 1 else None,
-        'persistence_baseline_mae': round(float(mean_absolute_error(actual, baseline)), 4),
+        'persistence_baseline_name': 'Persistence (same as most recent month)',
+        'persistence_baseline_mae': round(baseline_mae, 4),
+        'persistence_baseline_rmse': round(baseline_rmse, 4),
+        'beats_persistence_baseline': beats_persistence,
+        'mae_change_vs_baseline_pct': round(mae_change_pct, 1) if mae_change_pct is not None else None,
+        # Forecasts are intentionally restricted to planning support.  This
+        # is particularly important when the model fails the baseline check.
+        'deployment_status': 'planning_support_only',
+        'blood_type_feature_policy': (
+            'Aggregate historical barangay-month feature only; never use for '
+            'an individual risk decision or diagnosis.'
+        ),
+        'privacy_protections': [
+            'Use only de-identified barangay-month aggregates.',
+            'Lag aggregate features by one month to prevent future-data leakage.',
+            'Do not include individual blood-type values in forecast outputs.',
+        ],
         'features': FEATURES,
         'target': 'next-month dengue case count',
         'algorithm': 'RandomForestRegressor',
         'random_state': 42,
-        'warning': 'Decision-support forecast; validate with health professionals.',
+        'warning': (
+            'Planning-support forecast only; validate with authorized health '
+            'personnel. It must not be used as a confirmed outbreak or an '
+            'automatic alert.'
+        ),
     }
     # Refit the deployable model on all usable rows after holdout evaluation.
     pipeline = Pipeline([

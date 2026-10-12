@@ -24,8 +24,6 @@ _ALIASES = {
     "acmac mariano badelles": "Acmac-Mariano Badelles Sr.",
     "maria cristina": "Maria Cristina",
     "pala o": "Palao",
-    "old poblacion": "Poblacion",
-    "poblacion west": "Poblacion",
     "sta elena": "Santa Elena",
     "villa verde": "Villa Verde",
     "villaverde": "Villa Verde",

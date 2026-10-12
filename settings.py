@@ -234,14 +234,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # DENGUEWATCH APPLICATION SETTINGS
 # ============================================================
 
-# Google Maps API Key
-# Replace this with your actual key later.
-GOOGLE_MAPS_API_KEY = os.environ.get(
-    'GOOGLE_MAPS_API_KEY',
-    ''
-)
-
-
 # ============================================================
 # FIREBASE SETTINGS
 # ============================================================

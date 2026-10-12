@@ -15,8 +15,20 @@ import pandas as pd
 from django.conf import settings
 from django.core.cache import cache
 
-from .features import BLOOD_TYPES, BLOOD_TYPE_COLUMNS, FEATURES, engineer_features
+from .features import FEATURES, engineer_features
 from monitoring.locations import canonicalize_barangay
+
+
+# This statement is exposed beside every forecast that was trained with the
+# aggregate blood-type columns.  It deliberately prohibits individual use.
+BLOOD_TYPE_FEATURE_NOTICE = (
+    'Blood type is not used for an individual risk decision or diagnosis. '
+    'If present in training, it is de-identified historical barangay-month '
+    'aggregate data, lagged by one month. Individual blood-type values are not '
+    'included in forecast outputs; access to clinical records remains limited '
+    'to authorized health personnel.'
+)
+MINIMUM_AGGREGATE_RECORDS = 5
 
 
 def _most_common(counter: Counter, default: str = 'Not available') -> str:
@@ -45,7 +57,7 @@ def _age_group(value: object) -> str | None:
     return '60+ years'
 
 
-def load_demographic_profiles(dataset_dir: Path) -> tuple[dict, dict]:
+def load_demographic_profiles(dataset_dir: Path) -> tuple[dict, dict, list[dict]]:
     """Summarize observed patient records globally and per barangay.
 
     These values describe historical records. They are not model predictions
@@ -59,6 +71,19 @@ def load_demographic_profiles(dataset_dir: Path) -> tuple[dict, dict]:
         'blood': Counter(), 'sex': Counter(), 'age': Counter(),
         'purok': Counter(), 'records': 0,
     }
+    yearly_blood = defaultdict(Counter)
+
+    def record_year(row: dict) -> str | None:
+        """Read a source year without exposing an individual record date."""
+        value = row.get('Year') or row.get('year') or row.get('DAdmit') or row.get('Date Reported')
+        try:
+            text = str(value).strip()
+            if len(text) == 4 and text.isdigit():
+                return text
+            parsed = pd.to_datetime(value, errors='coerce')
+            return str(int(parsed.year)) if not pd.isna(parsed) else None
+        except (TypeError, ValueError, OverflowError):
+            return None
 
     for path in sorted(dataset_dir.glob('WILBUR_DSO_dengue_*.csv')):
         try:
@@ -94,6 +119,10 @@ def load_demographic_profiles(dataset_dir: Path) -> tuple[dict, dict]:
                     if blood in {'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'}:
                         area['blood'][blood] += 1
                         overall['blood'][blood] += 1
+                        year = record_year(row)
+                        if year:
+                            yearly_blood[year][blood] += 1
+                            yearly_blood[year]['__records__'] += 1
                     if age:
                         area['age'][age] += 1
                         overall['age'][age] += 1
@@ -104,16 +133,42 @@ def load_demographic_profiles(dataset_dir: Path) -> tuple[dict, dict]:
             continue
 
     def summarize(values: dict) -> dict:
+        blood_records = sum(values['blood'].values())
         return {
             'historical_records': values['records'],
-            'common_blood_type': _most_common(values['blood']),
+            # Suppress small aggregate groups; no individual information is
+            # used or displayed in the forecast interface.
+            'common_blood_type': (
+                _most_common(values['blood'])
+                if blood_records >= MINIMUM_AGGREGATE_RECORDS
+                else 'Not displayed'
+            ),
+            'blood_type_records': blood_records,
             'common_sex': _most_common(values['sex']),
             'common_age_group': _most_common(values['age']),
             'common_purok': _most_common(values['purok']),
         }
 
-    return ({name: summarize(values) for name, values in counters.items()},
-            summarize(overall))
+    yearly_summary = []
+    for year, counts in yearly_blood.items():
+        record_count = counts['__records__']
+        if record_count < MINIMUM_AGGREGATE_RECORDS:
+            continue
+        values = Counter({key: value for key, value in counts.items() if key != '__records__'})
+        common = _most_common(values)
+        yearly_summary.append({
+            'year': year,
+            'record_count': record_count,
+            'common_blood_type': common,
+            'common_blood_type_share': round(values[common] / record_count * 100, 1),
+        })
+    yearly_summary.sort(key=lambda item: item['year'], reverse=True)
+
+    return (
+        {name: summarize(values) for name, values in counters.items()},
+        summarize(overall),
+        yearly_summary,
+    )
 
 
 def planning_recommendation(risk_level: str) -> str:
@@ -135,6 +190,69 @@ def classify_risk(predicted_cases: float) -> str:
     if predicted_cases >= 6:
         return 'Moderate'
     return 'Low'
+
+
+def model_evaluation_summary(metrics: dict | None) -> dict:
+    """Describe a holdout evaluation without overstating forecast reliability.
+
+    The persistence baseline predicts that the next month will be identical to
+    the latest observed month.  It is evaluated on exactly the same test rows
+    as the Random Forest model.  A lower MAE is better.  The output remains
+    planning support even if a future training run beats the baseline.
+    """
+    metrics = metrics or {}
+
+    def number(name: str):
+        try:
+            return float(metrics[name])
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    model_mae = number('mae')
+    baseline_mae = number('persistence_baseline_mae')
+    model_rmse = number('rmse')
+    baseline_rmse = number('persistence_baseline_rmse')
+    comparison_available = model_mae is not None and baseline_mae is not None
+    beats_baseline = comparison_available and model_mae < baseline_mae
+
+    if comparison_available and baseline_mae > 0:
+        difference = round(model_mae - baseline_mae, 4)
+        percent = round(abs(difference) / baseline_mae * 100, 1)
+        if beats_baseline:
+            comparison_message = (
+                f'The model MAE is {percent}% lower than the persistence baseline. '
+                'Continue to use forecasts as planning support only.'
+            )
+        else:
+            comparison_message = (
+                f'The model MAE is {percent}% higher than the persistence baseline. '
+                'The persistence baseline currently performs better, so forecasts '
+                'must remain planning support only.'
+            )
+    else:
+        difference = None
+        percent = None
+        comparison_message = (
+            'Baseline comparison is unavailable. Forecasts must remain planning '
+            'support only until the model is evaluated on a chronological test set.'
+        )
+
+    return {
+        'model_mae': model_mae,
+        'model_rmse': model_rmse,
+        'baseline_mae': baseline_mae,
+        'baseline_rmse': baseline_rmse,
+        'baseline_name': metrics.get(
+            'persistence_baseline_name',
+            'Persistence (same as most recent month)',
+        ),
+        'comparison_available': comparison_available,
+        'beats_baseline': beats_baseline,
+        'mae_difference': difference,
+        'mae_difference_percent': percent,
+        'comparison_message': comparison_message,
+        'planning_support_only': True,
+    }
 
 
 def _weather_description(code: object, rain_mm: float) -> str:
@@ -352,11 +470,15 @@ def prediction_context(request=None) -> dict:
         'critical_count': 0,
         'moderate_count': 0,
         'low_count': 0,
+        'priority_barangays': [],
+        'planning_summary': {},
         'forecast_period': 'Unavailable',
         'case_data_period': 'Unavailable',
         'prediction_error': '',
         'weather': {},
         'demographic_summary': {},
+        'blood_type_by_year': [],
+        'blood_type_feature_notice': BLOOD_TYPE_FEATURE_NOTICE,
     }
 
     if not model_path.exists():
@@ -403,7 +525,9 @@ def prediction_context(request=None) -> dict:
 
     try:
         data = pd.read_csv(dataset_path)
-        profiles, demographic_summary = load_demographic_profiles(dataset_path.parent)
+        profiles, demographic_summary, blood_type_by_year = load_demographic_profiles(
+            dataset_path.parent,
+        )
 
         required_columns = {
             'year', 'month', 'case_count', 'barangay',
@@ -559,12 +683,6 @@ def prediction_context(request=None) -> dict:
             risk_level = classify_risk(
                 predicted
             )
-            blood_shares = {
-                blood_type: float(row.get(column, 0) or 0)
-                for blood_type, column in zip(BLOOD_TYPES, BLOOD_TYPE_COLUMNS)
-            }
-            training_blood_type = max(blood_shares, key=blood_shares.get)
-
             forecasts.append({
                 'barangay': row['barangay'],
                 'predicted_cases': predicted,
@@ -586,9 +704,11 @@ def prediction_context(request=None) -> dict:
                     float(row['humidity_pct']),
                     1,
                 ),
-                'common_blood_type': profile.get(
+                # Aggregate historical context only; it is never used to
+                # describe an individual resident's risk or diagnosis.
+                'historical_common_blood_type': profile.get(
                     'common_blood_type',
-                    'Not available',
+                    'Not displayed',
                 ),
                 'common_sex': profile.get(
                     'common_sex',
@@ -606,8 +726,6 @@ def prediction_context(request=None) -> dict:
                     'historical_records',
                     0,
                 ),
-                'training_blood_type': training_blood_type if blood_shares[training_blood_type] else 'Not available',
-                'training_blood_type_share': round(blood_shares[training_blood_type] * 100, 1),
                 'recommendation': planning_recommendation(
                     risk_level
                 ),
@@ -617,6 +735,24 @@ def prediction_context(request=None) -> dict:
             key=lambda item: item['predicted_cases'],
             reverse=True,
         )
+
+        priority_barangays = forecasts[:5]
+        planning_summary = {
+            'total_predicted_cases': round(
+                sum(item['predicted_cases'] for item in forecasts),
+                2,
+            ),
+            'increasing_barangays': sum(
+                item['trend'] == 'Increasing' for item in forecasts
+            ),
+            'priority_barangays': len([
+                item for item in forecasts
+                if item['risk_level'] in {'High', 'Critical'}
+            ]),
+            'historical_case_period': (
+                f"{month_name[latest_month]} {latest_year}"
+            ),
+        }
 
         next_month = (
             1
@@ -637,6 +773,9 @@ def prediction_context(request=None) -> dict:
                 'metrics',
                 {},
             ),
+            'model_evaluation': model_evaluation_summary(
+                artifact.get('metrics', {}),
+            ),
             'high_count': sum(
                 row['risk_level'] == 'High'
                 for row in forecasts
@@ -653,6 +792,8 @@ def prediction_context(request=None) -> dict:
                 row['risk_level'] == 'Low'
                 for row in forecasts
             ),
+            'priority_barangays': priority_barangays,
+            'planning_summary': planning_summary,
             'forecast_period': (
                 f'{month_name[next_month]} {next_year}'
             ),
@@ -662,6 +803,8 @@ def prediction_context(request=None) -> dict:
             'weather': weather,
             'weather_date_options': weather_date_options(),
             'demographic_summary': demographic_summary,
+            'blood_type_by_year': blood_type_by_year,
+            'blood_type_feature_notice': BLOOD_TYPE_FEATURE_NOTICE,
         })
 
     except (

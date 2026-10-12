@@ -18,9 +18,12 @@ from .models import (
     HotspotPrediction,
     MobileAccessToken,
     Purok,
+    SystemNotification,
     UserAccount,
+    notify_user,
+    log_report_action,
 )
-from .ml.service import prediction_context
+from .ml.service import BLOOD_TYPE_FEATURE_NOTICE, prediction_context
 from .locations import ILIGAN_BARANGAYS, canonicalize_barangay
 from .views import build_hotspot_data
 
@@ -211,7 +214,11 @@ def hotspots(request):
         return JsonResponse({
             "success": True,
             "source": "historical_dataset",
-            "case_data_period": request.GET.get('year', 'All years'),
+            "case_data_period": historical['historical_case_period'],
+            "historical_case_period": historical['historical_case_period'],
+            "selected_year": historical['selected_year'],
+            "selected_year_label": historical['selected_year_label'],
+            "map_data_source": historical['map_data_source'],
             "hotspots": items,
         })
 
@@ -242,9 +249,12 @@ def hotspots(request):
                 "temperature_c": forecast["temperature_c"],
                 "humidity_pct": forecast["humidity_pct"],
                 "recommendation": forecast["recommendation"],
-                "historical_common_blood_type": forecast.get("common_blood_type"),
-                "training_blood_type": forecast.get("training_blood_type"),
-                "training_blood_type_share": forecast.get("training_blood_type_share"),
+                # Aggregate historical context only—never an individual risk
+                # score, diagnosis, or personally identifiable record.
+                "historical_aggregate_common_blood_type": forecast.get(
+                    "historical_common_blood_type",
+                ),
+                "blood_type_feature_notice": BLOOD_TYPE_FEATURE_NOTICE,
                 "latitude": float(barangay.latitude) if barangay and barangay.latitude is not None else None,
                 "longitude": float(barangay.longitude) if barangay and barangay.longitude is not None else None,
             })
@@ -254,6 +264,8 @@ def hotspots(request):
             "forecast_period": context["forecast_period"],
             "case_data_period": context["case_data_period"],
             "weather": context.get("weather", {}),
+            "blood_type_by_year": context.get("blood_type_by_year", []),
+            "blood_type_feature_notice": BLOOD_TYPE_FEATURE_NOTICE,
             "hotspots": items,
         })
 
@@ -275,6 +287,11 @@ def hotspots(request):
         return JsonResponse({
             "success": True,
             "source": "historical_dataset",
+            "case_data_period": historical['historical_case_period'],
+            "historical_case_period": historical['historical_case_period'],
+            "selected_year": historical['selected_year'],
+            "selected_year_label": historical['selected_year_label'],
+            "map_data_source": historical['map_data_source'],
             "warning": context.get("prediction_error", ""),
             "hotspots": items,
         })
@@ -332,10 +349,40 @@ def alerts(request):
 @csrf_exempt
 @mobile_auth
 @require_http_methods(["GET", "POST"])
+def notifications(request):
+    """Resident in-app notifications, including replies from CHO."""
+    user = request.mobile_user
+    if request.method == "POST":
+        data = _body(request)
+        if data is None:
+            return _error("Invalid JSON body.")
+        ids = data.get("ids", [])
+        if not isinstance(ids, list):
+            return _error("Notification ids must be a list.")
+        SystemNotification.objects.filter(
+            recipient=user, notification_id__in=ids, is_read=False,
+        ).update(is_read=True, read_at=timezone.now())
+        return JsonResponse({"success": True})
+
+    items = [{
+        "id": item.notification_id,
+        "type": item.notification_type,
+        "title": item.title,
+        "message": item.message,
+        "link": item.link,
+        "is_read": item.is_read,
+        "created_at": item.created_at.isoformat(),
+    } for item in SystemNotification.objects.filter(recipient=user)[:100]]
+    return JsonResponse({"success": True, "notifications": items})
+
+
+@csrf_exempt
+@mobile_auth
+@require_http_methods(["GET", "POST"])
 def community_reports(request):
     user = request.mobile_user
     if request.method == "GET":
-        reports = CommunityReport.objects.filter(resident=user).select_related("barangay", "purok")
+        reports = CommunityReport.objects.filter(resident=user).select_related("barangay", "purok").prefetch_related("audit_logs__actor")
         items = [{
             "id": item.pk,
             "observation_type": item.observation_type,
@@ -346,6 +393,12 @@ def community_reports(request):
             "staff_response": item.staff_response,
             "reviewed_at": item.reviewed_at.isoformat() if item.reviewed_at else None,
             "submitted_at": item.submitted_at.isoformat(),
+            "audit_trail": [{
+                "action": audit.action,
+                "details": audit.details,
+                "actor": audit.actor.get_full_name() or audit.actor.username if audit.actor else "System",
+                "created_at": audit.created_at.isoformat(),
+            } for audit in item.audit_logs.all()],
         } for item in reports.order_by("-submitted_at")]
         return JsonResponse({"success": True, "reports": items})
 
@@ -373,4 +426,19 @@ def community_reports(request):
         latitude=data.get("latitude") or None,
         longitude=data.get("longitude") or None,
     )
+    log_report_action(
+        actor=user,
+        community_report=report,
+        action='CREATED',
+        details='Resident submitted a community report.',
+    )
+    for cho in UserAccount.objects.filter(role='CHO', account_status='APPROVED'):
+        notify_user(
+            cho,
+            'REPORT',
+            f'New resident {observation_type} report',
+            f'{barangay.barangay_name}: {description[:160]}',
+            created_by=user,
+            link='/cho/community-reports/',
+        )
     return JsonResponse({"success": True, "message": "Community report submitted for verification.", "id": report.pk}, status=201)

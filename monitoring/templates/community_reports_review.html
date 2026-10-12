@@ -29,10 +29,12 @@
     .report-title { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
     .status { font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
     .status-pending { background: #fef3c7; color: #92400e; }
+    .status-forwarded { background: #dbeafe; color: #1d4ed8; }
     .status-verified { background: #dcfce7; color: #166534; }
     .status-rejected { background: #fee2e2; color: #991b1b; }
     textarea { width: 100%; box-sizing: border-box; min-height: 92px; margin: 14px 0; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical; }
     .response { background: #eaf6f1; padding: 13px; border-radius: 8px; margin-top: 14px; }
+    .audit { margin-top: 14px; padding: 12px; border-radius: 8px; background: #f8fafc; font-size: 13px; }
     @media (max-width: 900px) { .sidebar { width: 220px; } .main-content { margin-left: 220px; width: calc(100% - 220px); } }
     @media (max-width: 700px) { .dashboard-wrapper { display: block; } .sidebar { position: static; width: 100%; min-height: auto; } .main-content { margin-left: 0; width: 100%; } .topbar, .content { padding-left: 20px; padding-right: 20px; } }
   </style>
@@ -46,26 +48,28 @@
         <div class="user-info"><div class="text-end"><strong>{{ current_user_name }}</strong><br><span class="role-badge">{{ current_user_role }}</span></div><div class="user-icon"><i class="fa-solid fa-user"></i></div></div>
       </header>
       <div class="content">
-        <section class="page-heading"><h1>Review resident observations</h1><p class="mb-0 text-muted">Review community reports, save an appropriate response, and update the resident in the mobile app.</p></section>
-        <div class="notice"><strong><i class="fa-solid fa-circle-info"></i> CHO review queue</strong><div class="mt-1">Reports are observations, not confirmed dengue cases. The saved response becomes visible to the reporting resident.</div></div>
+        <section class="page-heading"><h1>Final review of resident concerns</h1><p class="mb-0 text-muted">Review environmental reports that were verified and forwarded by the responsible BHW.</p></section>
+        <div class="notice"><strong><i class="fa-solid fa-circle-info"></i> CHO final review queue</strong><div class="mt-1">BHWs first verify reports within their assigned area. The CHO response below becomes visible to the resident in the mobile app.</div></div>
         {% for message in messages %}<div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>{% endfor %}
         {% for report in reports %}
           <article class="report-card">
             <div class="report-title"><strong>{{ report.observation_type }}</strong><span class="status status-{{ report.status|lower }}">{{ report.get_status_display }}</span></div>
             <p class="meta mt-2 mb-2">{{ report.resident.get_full_name|default:report.resident.username }} &middot; {{ report.barangay.barangay_name }}{% if report.purok %} &middot; {{ report.purok.purok_name }}{% endif %} &middot; {{ report.submitted_at }}</p>
             <p class="mb-0">{{ report.description }}</p>
-            {% if report.status == 'PENDING' %}
+            <div class="response"><strong>BHW verification:</strong> {{ report.bhw_review_note }}<br><span class="meta">Verified by {{ report.bhw_reviewed_by.get_full_name|default:report.bhw_reviewed_by.username }} &middot; {{ report.bhw_reviewed_at }}</span></div>
+            <div class="audit"><strong>Audit trail</strong>{% for audit in report.audit_logs.all %}<div class="meta mt-1">{{ audit.created_at|date:"M d, Y g:i a" }} &middot; {{ audit.get_action_display }} by {{ audit.actor.get_full_name|default:audit.actor.username|default:"System" }}{% if audit.details %}: {{ audit.details }}{% endif %}</div>{% empty %}<div class="meta mt-1">No audit events recorded.</div>{% endfor %}</div>
+            {% if report.status == 'FORWARDED' %}
               <form method="post" action="{% url 'review_community_report' report.pk %}">{% csrf_token %}
                 <label class="visually-hidden" for="response-{{ report.pk }}">Response visible to the resident</label>
                 <textarea id="response-{{ report.pk }}" name="staff_response" required placeholder="Response visible to the resident"></textarea>
-                <button class="btn btn-success" name="status" value="VERIFIED"><i class="fa-solid fa-check"></i> Verify and reply</button>
+                <button class="btn btn-success" name="status" value="VERIFIED"><i class="fa-solid fa-check"></i> Finalize and reply</button>
                 <button class="btn btn-danger ms-1" name="status" value="REJECTED"><i class="fa-solid fa-xmark"></i> Reject and reply</button>
               </form>
             {% else %}
               <div class="response"><strong>CHO response:</strong> {{ report.staff_response|default:"No response recorded." }}<br><span class="meta">Reviewed by {{ report.reviewed_by.get_full_name|default:report.reviewed_by.username }} &middot; {{ report.reviewed_at }}</span></div>
             {% endif %}
           </article>
-        {% empty %}<div class="report-card text-muted">No resident community reports yet.</div>{% endfor %}
+        {% empty %}<div class="report-card text-muted">No BHW-verified environmental concerns are awaiting CHO review.</div>{% endfor %}
       </div>
     </main>
   </div>

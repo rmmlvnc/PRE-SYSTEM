@@ -544,8 +544,15 @@
             height: 540px;
 
             width: 100%;
-        }
 
+            /* Keep the local risk polygons readable if an external map tile
+               provider blocks requests during a presentation. */
+            background-color: #edf5f3;
+            background-image:
+                linear-gradient(rgba(15,118,110,.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15,118,110,.08) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
 
         /* =========================================
            LEGEND
@@ -1091,11 +1098,11 @@
                 <div>
 
                     <h3>
-                        {{ monitored_barangays|default:"0" }}
+                        {{ bhw_covered_barangays|default:"0" }}
                     </h3>
 
                     <p>
-                        Monitored Barangays
+                        Barangays with Assigned BHWs
                     </p>
 
                 </div>
@@ -1204,10 +1211,7 @@
 
 
                     <p>
-
-                        Barangay boundaries are colored
-                        according to dengue case volume.
-
+                        Historical dengue case map: {{ historical_case_period }}. Selected: {{ selected_year_label }}. Barangay boundaries are colored according to recorded case volume, not AI forecasts.
                     </p>
 
                 </div>
@@ -1274,7 +1278,7 @@
             </div>
 
 
-            <div id="map"></div>
+            <div id="map" aria-label="Dengue risk boundary map"></div>
 
 
         </div>
@@ -1412,8 +1416,9 @@
                     "
                 >
 
-                    This map uses the dengue records
-                    contained in the loaded CSV datasets.
+                    This map uses historical dengue records
+                    from the loaded CSV datasets plus
+                    CHO-confirmed web case reports.
 
                     Each record is grouped according to
                     its reported Barangay and
@@ -1746,15 +1751,35 @@ const map =
     );
 
 
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
+map.attributionControl.setPrefix(false);
 
-        attribution:
-            "&copy; OpenStreetMap contributors"
+const mapMode = L.control({ position: "bottomleft" });
+mapMode.onAdd = function() {
+    const element = L.DomUtil.create("div", "leaflet-control");
+    element.style.cssText = "background:rgba(255,255,255,.92);padding:6px 9px;border-radius:4px;font-size:11px;color:#475569;box-shadow:0 1px 4px rgba(0,0,0,.18);";
+    element.textContent = "Street map + official barangay boundaries";
+    mapMode.label = element;
+    return element;
+};
+mapMode.addTo(map);
 
-    }
+
+/* Key-free road map below the historical dengue-risk polygons.  A failed
+   external request falls back to the local official-boundary view. */
+const streetBasemap = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 19, attribution: "Tiles &copy; Esri" }
 ).addTo(map);
+
+let streetMapAvailable = true;
+streetBasemap.on("tileerror", function() {
+    if (!streetMapAvailable) return;
+    streetMapAvailable = false;
+    map.removeLayer(streetBasemap);
+    if (mapMode.label) {
+        mapMode.label.textContent = "Official barangay boundary view (street map unavailable)";
+    }
+});
 
 
 /* =====================================================
@@ -2077,12 +2102,16 @@ trying to calculate the year again from a non-existent `year_data` object.
 */
 let selectedYear = "{{ selected_year|default:'all'|escapejs }}";
 
-let selectedRisk = "all";
+let selectedRisk = "{{ selected_risk|default:'all'|escapejs }}";
 
 /* Keep the dropdown synchronized with the year selected on the server. */
 const yearFilterElement = document.getElementById("yearFilter");
 if (yearFilterElement) {
     yearFilterElement.value = selectedYear || "all";
+}
+const riskFilterElement = document.getElementById("riskFilter");
+if (riskFilterElement) {
+    riskFilterElement.value = selectedRisk || "all";
 }
 
 

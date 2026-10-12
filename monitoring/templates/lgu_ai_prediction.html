@@ -710,6 +710,21 @@
 
             <section class="box mb-3">
                 <div class="box-head">
+                    <h5><i class="fa-solid fa-city me-2 text-success"></i>City planning brief</h5>
+                    <p>Read-only summary for coordination; CHO verifies field actions and public alerts.</p>
+                </div>
+                <div class="box-body">
+                    <div class="metric-grid">
+                        <div class="metric-item"><span>Forecast total</span><strong>{{ planning_summary.total_predicted_cases|default:"0" }}</strong></div>
+                        <div class="metric-item"><span>Increasing barangays</span><strong>{{ planning_summary.increasing_barangays|default:"0" }}</strong></div>
+                        <div class="metric-item"><span>High / critical priorities</span><strong>{{ planning_summary.priority_barangays|default:"0" }}</strong></div>
+                    </div>
+                    <p class="source">Historical case month: {{ case_data_period }} · Forecast month: {{ forecast_period }}. Use this information for resource planning, coordination, and reporting only.</p>
+                </div>
+            </section>
+
+            <section class="box mb-3">
+                <div class="box-head">
                     <h5>
                         <i class="fa-solid fa-people-group me-2 text-success"></i>
                         Historical Case Profile
@@ -725,8 +740,8 @@
                         <strong>{{ demographic_summary.historical_records }}</strong>
                     </div>
                     <div class="profile-card">
-                        <span>Common blood type</span>
-                        <strong>{{ demographic_summary.common_blood_type }}</strong>
+                        <span>Most common historical blood type</span>
+                        <strong>{{ demographic_summary.common_blood_type|default:"Not displayed" }}</strong>
                     </div>
                     <div class="profile-card">
                         <span>Common sex</span>
@@ -741,6 +756,23 @@
                         <strong>{{ demographic_summary.common_purok }}</strong>
                     </div>
                 </div>
+                <p class="source px-3 pb-3 mb-0">
+                    <strong>Privacy and clinical limitation:</strong>
+                    {{ blood_type_feature_notice }}
+                </p>
+                {% if blood_type_by_year %}
+                    <div class="box-body pt-0">
+                        <strong>Historical aggregate blood type by year</strong>
+                        <div class="profile-grid mt-2">
+                            {% for item in blood_type_by_year %}
+                                <div class="profile-card">
+                                    <span>{{ item.year }} · {{ item.record_count }} aggregate records</span>
+                                    <strong>{{ item.common_blood_type }} ({{ item.common_blood_type_share }}%)</strong>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
             </section>
 
             <section class="grid-two">
@@ -833,7 +865,7 @@
                                     Estimated {{ row.predicted_cases }} cases ·
                                     Current input {{ row.current_cases }} ·
                                     Historical profile: {{ row.common_age_group }},
-                                    {{ row.common_sex }}, {{ row.common_blood_type }}
+                                    {{ row.common_sex }}
                                 </div>
                             </div>
                             <span class="risk-badge badge-{{ row.risk_level|lower }}">
@@ -865,6 +897,14 @@
                             <strong>{{ model_metrics.rmse }}</strong>
                         </div>
                         <div class="metric-item">
+                            <span>Persistence Baseline MAE</span>
+                            <strong>{{ model_evaluation.baseline_mae|default:"N/A" }}</strong>
+                        </div>
+                        <div class="metric-item">
+                            <span>Persistence Baseline RMSE</span>
+                            <strong>{{ model_evaluation.baseline_rmse|default:"N/A" }}</strong>
+                        </div>
+                        <div class="metric-item">
                             <span>R² Score</span>
                             <strong>{{ model_metrics.r2 }}</strong>
                         </div>
@@ -872,10 +912,10 @@
                     <p class="source">
                         Test rows: {{ model_metrics.test_rows }} ·
                         Validation starts: {{ model_metrics.validation_start }} ·
-                        Persistence baseline MAE:
-                        {{ model_metrics.persistence_baseline_mae }}.
-                        Lower MAE is better; do not describe the model as highly accurate unless
-                        it consistently beats the baseline.
+                        Baseline: {{ model_evaluation.baseline_name }}.
+                        Lower MAE/RMSE is better. {{ model_evaluation.comparison_message }}
+                        Forecasts remain planning guidance only and must not be treated as
+                        confirmed outbreaks or automatic action triggers.
                     </p>
                 </div>
             </section>
@@ -941,8 +981,8 @@
                                     </td>
                                     <td>
                                         <strong>{{ row.common_age_group }}</strong><br>
-                                        {{ row.common_sex }} · {{ row.common_blood_type }}<br>
-                                        <span class="muted">Training feature: {{ row.training_blood_type|default:"N/A" }} historical share ({{ row.training_blood_type_share|default:"0" }}%)</span><br>
+                                        {{ row.common_sex }}<br>
+                                        <span class="muted">Historical aggregate blood type: {{ row.historical_common_blood_type|default:"Not displayed" }}. Not an individual risk or diagnosis.</span><br>
                                         <span class="muted">{{ row.common_purok }} · {{ row.historical_records }} records</span>
                                     </td>
                                     <td>{{ row.recommendation }}</td>

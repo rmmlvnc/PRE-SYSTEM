@@ -96,6 +96,7 @@ class UserAccount(AbstractUser):
 class DengueCase(models.Model):
 
     STATUS_CHOICES = [
+        ('Draft', 'Draft'),
         ('Pending', 'Pending'),
         ('Confirmed', 'Confirmed'),
         ('Active', 'Active'),
@@ -146,6 +147,33 @@ class DengueCase(models.Model):
     )
 
     remarks = models.TextField(
+        blank=True
+    )
+
+    symptoms = models.TextField(
+        blank=True,
+        help_text='Observed symptoms reported or assessed by the CHW.'
+    )
+
+    location_details = models.TextField(
+        blank=True,
+        help_text='Street, landmark, or other location details for follow-up.'
+    )
+
+    reviewed_by = models.ForeignKey(
+        UserAccount,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_dengue_cases'
+    )
+
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    cho_review_note = models.TextField(
         blank=True
     )
 
@@ -297,6 +325,7 @@ class CommunityReport(models.Model):
 
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
+        ('FORWARDED', 'Forwarded to CHO'),
         ('VERIFIED', 'Verified'),
         ('REJECTED', 'Rejected'),
     ]
@@ -325,6 +354,15 @@ class CommunityReport(models.Model):
     longitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
     staff_response = models.TextField(blank=True)
+    bhw_review_note = models.TextField(blank=True)
+    bhw_reviewed_by = models.ForeignKey(
+        UserAccount,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bhw_reviewed_community_reports',
+    )
+    bhw_reviewed_at = models.DateTimeField(null=True, blank=True)
     reviewed_by = models.ForeignKey(
         UserAccount,
         on_delete=models.SET_NULL,
@@ -365,6 +403,97 @@ class Alert(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(null=True, blank=True)
+
+
+class SystemNotification(models.Model):
+    """An in-app notification owned by one DengueWatch user."""
+
+    TYPE_CHOICES = [
+        ('REPORT', 'Community report'),
+        ('REPLY', 'CHO reply'),
+        ('ASSIGNMENT', 'Area assignment'),
+        ('CASE', 'Case review'),
+    ]
+
+    notification_id = models.AutoField(primary_key=True)
+    recipient = models.ForeignKey(
+        UserAccount,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+    )
+    created_by = models.ForeignKey(
+        UserAccount,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sent_notifications',
+    )
+    notification_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    title = models.CharField(max_length=150)
+    message = models.TextField()
+    link = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class ReportAuditLog(models.Model):
+    """Append-only record of actions taken on a community or suspected-case report."""
+
+    ACTION_CHOICES = [
+        ('CREATED', 'Created'),
+        ('EDITED', 'Edited'),
+        ('SUBMITTED', 'Submitted to CHO'),
+        ('FORWARDED', 'Verified and forwarded'),
+        ('VERIFIED', 'Verified'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    audit_id = models.AutoField(primary_key=True)
+    community_report = models.ForeignKey(
+        CommunityReport, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='audit_logs',
+    )
+    dengue_case = models.ForeignKey(
+        DengueCase, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='audit_logs',
+    )
+    actor = models.ForeignKey(
+        UserAccount, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='report_audit_actions',
+    )
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    details = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at', 'audit_id']
+
+
+def log_report_action(*, actor, action, details='', community_report=None, dengue_case=None):
+    """Record a report state change; callers never update or delete audit rows."""
+    return ReportAuditLog.objects.create(
+        actor=actor,
+        action=action,
+        details=details,
+        community_report=community_report,
+        dengue_case=dengue_case,
+    )
+
+
+def notify_user(recipient, notification_type, title, message, *, created_by=None, link=''):
+    """Store a notification. This is intentionally in-app, not a medical emergency channel."""
+    return SystemNotification.objects.create(
+        recipient=recipient,
+        created_by=created_by,
+        notification_type=notification_type,
+        title=title,
+        message=message,
+        link=link,
+    )
 
 
 class MobileAccessToken(models.Model):

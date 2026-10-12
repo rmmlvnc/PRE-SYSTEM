@@ -17,6 +17,7 @@ urlpatterns = [
     path("api/mobile/me/", api.me, name="api_mobile_me"),
     path("api/mobile/hotspots/", api.hotspots, name="api_mobile_hotspots"),
     path("api/mobile/alerts/", api.alerts, name="api_mobile_alerts"),
+    path("api/mobile/notifications/", api.notifications, name="api_mobile_notifications"),
     path("api/mobile/community-reports/", api.community_reports, name="api_mobile_community_reports"),
 
     # =====================================================
@@ -61,6 +62,11 @@ urlpatterns = [
         "dashboard/",
         views.dashboard,
         name="dashboard"
+    ),
+    path(
+        "notifications/",
+        views.notification_center,
+        name="notification_center"
     ),
 
 
@@ -208,6 +214,43 @@ urlpatterns = [
         views.review_community_report,
         name="review_community_report"
     ),
+    path(
+        "cho/alerts/",
+        views.alert_management,
+        name="alert_management"
+    ),
+    path(
+        "cho/alerts/create/",
+        views.create_alert,
+        name="create_alert"
+    ),
+    path(
+        "cho/alerts/<int:alert_id>/toggle/",
+        views.toggle_alert,
+        name="toggle_alert"
+    ),
+
+    path(
+        "bhw/environmental-reports/",
+        views.bhw_environmental_reports,
+        name="bhw_environmental_reports"
+    ),
+    path(
+        "bhw/environmental-reports/<int:report_id>/forward/",
+        views.forward_environmental_report,
+        name="forward_environmental_report"
+    ),
+
+    path(
+        "cho/suspected-cases/",
+        views.cho_suspected_case_reviews,
+        name="cho_suspected_case_reviews"
+    ),
+    path(
+        "cho/suspected-cases/<int:case_id>/review/",
+        views.review_chw_case_report,
+        name="review_chw_case_report"
+    ),
 
     path(
         "cho/bhw-assignments/<int:user_id>/assign/",
@@ -341,6 +384,16 @@ urlpatterns = [
         "dashboard/chw/",
         views.chw_dashboard,
         name="chw_dashboard"
+    ),
+    path(
+        "chw/suspected-cases/",
+        views.chw_case_reports,
+        name="chw_case_reports"
+    ),
+    path(
+        "chw/suspected-cases/<int:case_id>/update/",
+        views.update_chw_case_report,
+        name="update_chw_case_report"
     ),
 
 

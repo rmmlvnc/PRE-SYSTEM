@@ -715,9 +715,9 @@
             </h2>
 
             <p>
-                Report and monitor dengue information within your
+                Review resident environmental concerns within your
                 assigned barangay and relevant Sitio / Purok /
-                Street areas.
+                Street area, then forward verified concerns to CHO.
             </p>
 
         </div>
@@ -735,10 +735,10 @@
 
             <br>
 
-            BHW access is limited to assigned-area dengue
-            monitoring and reporting. Case validation, user
-            management, city-wide administration, and system
-            settings remain under the City Health Office.
+            BHW access is limited to the assigned area. Review resident
+            environmental concerns, add a verification note, and forward
+            valid concerns to CHO. CHO remains the final authority for
+            confirmed dengue cases and resident replies.
 
         </div>
 
@@ -783,14 +783,14 @@
                     </h3>
 
                     <p>
-                        Cases in Assigned Barangay
+                        Recorded Cases in Assigned Barangay
                     </p>
 
                 </div>
 
             </div>
 
-            <!-- SUBMITTED -->
+            <!-- PENDING RESIDENT ENVIRONMENTAL CONCERNS -->
 
             <div class="stat-card">
 
@@ -801,11 +801,34 @@
                 <div>
 
                     <h3>
-                        {{ submitted_reports|default:"0" }}
+                        {{ pending_environmental_reports|default:"0" }}
                     </h3>
 
                     <p>
-                        Reports Submitted by You
+                        Resident Concerns Awaiting Review
+                    </p>
+
+                </div>
+
+            </div>
+
+            <!-- FORWARDED TO CHO -->
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-share-from-square"></i>
+                </div>
+
+                <div>
+
+                    <h3
+                    >
+                        {{ forwarded_environmental_reports|default:"0" }}
+                    </h3>
+
+                    <p>
+                        Verified Concerns Forwarded to CHO
                     </p>
 
                 </div>
@@ -822,46 +845,12 @@
 
                 <div>
 
-                    <h3
-                        class="
-                            {% if current_risk == 'Low' %}
-                                risk-value-low
-                            {% elif current_risk == 'Moderate' %}
-                                risk-value-moderate
-                            {% elif current_risk == 'High' %}
-                                risk-value-high
-                            {% elif current_risk == 'Critical' %}
-                                risk-value-critical
-                            {% endif %}
-                        "
-                    >
+                    <h3>
                         {{ current_risk|default:"N/A" }}
                     </h3>
 
                     <p>
                         Current Barangay Risk Level
-                    </p>
-
-                </div>
-
-            </div>
-
-            <!-- PUROKS -->
-
-            <div class="stat-card">
-
-                <div class="stat-icon">
-                    <i class="fa-solid fa-location-dot"></i>
-                </div>
-
-                <div>
-
-                    <h3>
-                        {{ monitored_puroks|default:"0" }}
-                    </h3>
-
-                    <p>
-                        Recorded Locations / Puroks
                     </p>
 
                 </div>
@@ -884,8 +873,8 @@
             </div>
 
             <p class="card-subtitle">
-                Functions relevant to barangay-level dengue
-                surveillance and reporting.
+                Functions for assigned-area monitoring and the BHW-to-CHO
+                environmental-report review flow.
             </p>
 
             <br>
@@ -893,19 +882,37 @@
             <div class="action-grid">
 
                 <a
-                    href="{% url 'cases' %}"
+                    href="{% url 'dengue_case_bhw' %}"
                     class="action-card"
                 >
 
                     <i class="fa-solid fa-file-medical"></i>
 
                     <strong>
-                        Dengue Case Monitoring
+                        Recorded Case Information
                     </strong>
 
                     <small>
-                        View dengue case information permitted for
-                        your BHW role.
+                        View case information for your assigned area.
+                        CHO confirms and corrects case records.
+                    </small>
+
+                </a>
+
+                <a
+                    href="{% url 'bhw_environmental_reports' %}"
+                    class="action-card"
+                >
+
+                    <i class="fa-solid fa-leaf"></i>
+
+                    <strong>
+                        Environmental Reports
+                    </strong>
+
+                    <small>
+                        Verify resident environmental concerns in your
+                        assigned area and forward valid reports to CHO.
                     </small>
 
                 </a>
@@ -990,12 +997,12 @@
                     <i class="fa-solid fa-clipboard-list"></i>
 
                     <strong>
-                        My Recent Reports
+                        Recent Area Reports
                     </strong>
 
                     <small>
-                        Review the latest dengue reports submitted
-                        using your account.
+                        Review recent resident environmental concerns in
+                        your assigned area.
                     </small>
 
                 </a>
@@ -1021,8 +1028,8 @@
             </div>
 
             <p class="card-subtitle">
-                BHW monitoring must remain limited to the area
-                assigned by the City Health Office.
+                BHW environmental-review work must remain limited to the
+                area assigned by the City Health Office.
             </p>
 
             <br>
@@ -1050,7 +1057,8 @@
                             Access:
                         </strong>
 
-                        Relevant barangay dengue information only
+                        Resident environmental reports and recorded case
+                        information only
                     </p>
 
                 </div>
@@ -1076,8 +1084,8 @@
                             Monitoring:
                         </strong>
 
-                        Case reporting, hotspot awareness, and
-                        prevention support
+                        Environmental concern verification, hotspot
+                        awareness, and prevention support
                     </p>
 
                 </div>
@@ -1103,8 +1111,8 @@
             </div>
 
             <p class="card-subtitle">
-                This summary uses the same case-volume risk
-                classification as the DengueWatch hotspot map.
+                This historical case-volume summary supports planning and
+                prevention; it is not a diagnosis or final case decision.
             </p>
 
             <br>
@@ -1227,12 +1235,13 @@
 
                 <i class="fa-solid fa-clipboard-list"></i>
 
-                My Recent Case Reports
+                Recent Resident Environmental Reports
             </div>
 
             <p class="card-subtitle">
-                Latest dengue reports submitted using your BHW
-                account.
+                Concerns reported by residents inside your assigned area.
+                BHWs can verify and forward them to CHO from the
+                Environmental Reports page.
             </p>
 
             <br>
@@ -1246,15 +1255,15 @@
                         <tr>
 
                             <th>
-                                Case ID
+                                Concern
                             </th>
 
                             <th>
-                                Date Reported
+                                Submitted
                             </th>
 
                             <th>
-                                Case Status
+                                Workflow Status
                             </th>
 
                         </tr>
@@ -1263,28 +1272,28 @@
 
                     <tbody>
 
-                        {% for case in recent_cases %}
+                        {% for report in recent_environmental_reports %}
 
                             <tr>
 
                                 <td>
-                                    #{{ case.dengue_case_id }}
+                                    {{ report.observation_type }}
                                 </td>
 
                                 <td>
-                                    {{ case.date_reported }}
+                                    {{ report.submitted_at|date:"M. j, Y, g:i a" }}
                                 </td>
 
                                 <td>
 
-                                    {% with status=case.case_status|lower %}
+                                    {% with status=report.status|lower %}
 
                                         <span
                                             class="
                                                 status
                                                 {% if status == 'pending' %}
                                                     status-pending
-                                                {% elif status == 'approved' or status == 'validated' %}
+                                                {% elif status == 'forwarded' or status == 'verified' %}
                                                     status-approved
                                                 {% elif status == 'rejected' %}
                                                     status-rejected
@@ -1293,7 +1302,7 @@
                                                 {% endif %}
                                             "
                                         >
-                                            {{ case.case_status }}
+                                            {{ report.get_status_display }}
                                         </span>
 
                                     {% endwith %}
@@ -1310,8 +1319,8 @@
                                     colspan="3"
                                     class="text-center text-muted py-4"
                                 >
-                                    You have not submitted any
-                                    dengue case reports yet.
+                                    No resident environmental reports are
+                                    available in your assigned area yet.
                                 </td>
 
                             </tr>
