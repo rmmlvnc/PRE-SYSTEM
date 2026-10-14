@@ -5,12 +5,17 @@ rem Start the Django API so Expo Go on a phone can reach it on port 8000.
 rem This script is located in the Django project folder.
 
 set "PROJECT_DIR=%~dp0"
-set "PYTHON=%PROJECT_DIR%..\Scripts\python.exe"
+set "PYTHON=%PROJECT_DIR%django-env\Scripts\python.exe"
+if not exist "%PYTHON%" set "PYTHON=%PROJECT_DIR%..\django-env\Scripts\python.exe"
+if not exist "%PYTHON%" set "PYTHON=%USERPROFILE%\django-env\Scripts\python.exe"
 
 if not exist "%PYTHON%" (
   echo Django virtual-environment Python was not found:
   echo %PYTHON%
-  echo Expected this project to be inside a django-env folder.
+  echo Checked these locations:
+  echo %PROJECT_DIR%django-env\Scripts\python.exe
+  echo %PROJECT_DIR%..\django-env\Scripts\python.exe
+  echo %USERPROFILE%\django-env\Scripts\python.exe
   pause
   exit /b 1
 )
